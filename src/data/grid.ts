@@ -78,14 +78,21 @@ export function isRiver(row: number, col: number): boolean {
   return RIVER_SET.has(cellKey(row, col));
 }
 
-export function isRiverAdjacent(row: number, col: number): boolean {
-  const neighbors: [number, number][] = [
-    [row - 1, col],
-    [row + 1, col],
-    [row, col - 1],
-    [row, col + 1],
+function neighborsOf(row: number, col: number): Cell[] {
+  return [
+    { row: row - 1, col },
+    { row: row + 1, col },
+    { row, col: col - 1 },
+    { row, col: col + 1 },
   ];
-  return neighbors.some(([r, c]) => RIVER_SET.has(cellKey(r, c)));
+}
+
+export function riverNeighborsOf(row: number, col: number): Cell[] {
+  return neighborsOf(row, col).filter((c) => RIVER_SET.has(cellKey(c.row, c.col)));
+}
+
+export function isRiverAdjacent(row: number, col: number): boolean {
+  return riverNeighborsOf(row, col).length > 0;
 }
 
 export type TileTypeKey = "residential" | "building" | "power" | "road" | "park";
@@ -184,6 +191,7 @@ export interface Synergy {
   pair: [TileTypeKey, TileTypeKey];
   label: string;
   hint: string;
+  color: string;
   effects: Partial<Record<IndicatorKey, number>>;
 }
 
@@ -194,6 +202,7 @@ export const SYNERGIES: Synergy[] = [
     pair: ["park", "residential"],
     label: "생활 속 녹지",
     hint: "텃밭·공원 바로 옆 주거지는 삶의 질과 생태 다양성이 함께 좋아져요.",
+    color: "#2f6f5e",
     effects: { biodiversity: 3, convenience: 2 },
   },
   {
@@ -201,6 +210,7 @@ export const SYNERGIES: Synergy[] = [
     pair: ["park", "park"],
     label: "연결된 녹지",
     hint: "텃밭·공원끼리 맞닿으면 생물이 오가는 통로가 되어 생태 다양성이 크게 좋아져요.",
+    color: "#5aa06e",
     effects: { biodiversity: 4 },
   },
   {
@@ -208,6 +218,7 @@ export const SYNERGIES: Synergy[] = [
     pair: ["road", "park"],
     label: "가로수길",
     hint: "도로 옆 텃밭·공원은 가로수길처럼 느껴져서 경관과 편의가 함께 좋아져요.",
+    color: "#c9973a",
     effects: { scenery: 2, convenience: 1 },
   },
   {
@@ -215,6 +226,7 @@ export const SYNERGIES: Synergy[] = [
     pair: ["building", "building"],
     label: "상업지 과밀",
     hint: "상업·공공건물이 두 개 붙어 있으면 혼잡해져서 오히려 편의성이 떨어져요.",
+    color: "#b0413e",
     effects: { convenience: -3 },
   },
   {
@@ -222,9 +234,14 @@ export const SYNERGIES: Synergy[] = [
     pair: ["power", "residential"],
     label: "생활 인프라 민원",
     hint: "전기·통신 시설 바로 옆 주거지는 경관에 대한 불만이 커져요.",
+    color: "#a85a8a",
     effects: { scenery: -3 },
   },
 ];
+
+// 하천과 맞닿았을 때도 시너지와 같은 방식으로 시각화해요.
+export const RIVER_SYNERGY_COLOR = "#3f7dc4";
+export const RIVER_SYNERGY_LABEL = "하천과 맞닿음";
 
 const SYNERGY_MAP = new Map<string, Synergy>(
   SYNERGIES.map((s) => [[...s.pair].sort().join("|"), s]),
@@ -258,6 +275,46 @@ export function activeSynergies(placements: Placements): { synergy: Synergy; cou
     synergy,
     count: counts.get(synergy.key)!,
   }));
+}
+
+export interface VisualSynergyEdge {
+  key: string;
+  from: Cell;
+  to: Cell;
+  color: string;
+  label: string;
+}
+
+// 그리드 위에 시너지(하천 포함)를 선으로 이어 보여주기 위한 좌표 목록이에요.
+// 한 칸이 여러 시너지에 동시에 걸쳐 있어도 각 변이 독립적으로 그려져서 모두 표시돼요.
+export function visualSynergyEdges(placements: Placements): VisualSynergyEdge[] {
+  const edges: VisualSynergyEdge[] = [];
+  for (const [a, b] of adjacentFilledPairs(placements)) {
+    const synergy = synergyFor(placements[a], placements[b]);
+    if (!synergy) continue;
+    const [rowA, colA] = a.split(",").map(Number);
+    const [rowB, colB] = b.split(",").map(Number);
+    edges.push({
+      key: `${synergy.key}:${a}-${b}`,
+      from: { row: rowA, col: colA },
+      to: { row: rowB, col: colB },
+      color: synergy.color,
+      label: synergy.label,
+    });
+  }
+  for (const key of Object.keys(placements)) {
+    const [row, col] = key.split(",").map(Number);
+    for (const river of riverNeighborsOf(row, col)) {
+      edges.push({
+        key: `river:${key}-${cellKey(river.row, river.col)}`,
+        from: { row, col },
+        to: river,
+        color: RIVER_SYNERGY_COLOR,
+        label: RIVER_SYNERGY_LABEL,
+      });
+    }
+  }
+  return edges;
 }
 
 export function simulateGrid(placements: Placements): IndicatorValues {

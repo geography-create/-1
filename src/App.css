@@ -430,11 +430,24 @@
   color: var(--ink-soft);
 }
 
+.tile-grid-stack {
+  position: relative;
+  max-width: 480px;
+}
+
 .tile-grid {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
   gap: 4px;
   max-width: 480px;
+}
+
+.synergy-overlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
 }
 
 .grid-cell {
@@ -496,6 +509,7 @@
   border-color: var(--nature);
 }
 
+.tile-grid-wrap.compact .tile-grid-stack,
 .tile-grid-wrap.compact .tile-grid {
   max-width: 220px;
   gap: 2px;

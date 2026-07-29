@@ -1,5 +1,13 @@
 import { useState } from "react";
-import { INDICATORS, REASON_OPTIONS, TILE_TYPES, countByType, getBadge, type SavedPlan } from "../data/grid";
+import {
+  INDICATORS,
+  REASON_OPTIONS,
+  TILE_TYPES,
+  countByType,
+  getBadge,
+  visualSynergyEdges,
+  type SavedPlan,
+} from "../data/grid";
 import IndicatorRadar from "../components/IndicatorRadar";
 import TileGrid from "../components/TileGrid";
 
@@ -72,8 +80,18 @@ export default function CompareScreen({ savedPlans, onNext, onBack }: Props) {
       </div>
 
       <div className="compare-grids">
-        <TileGrid placements={planA.placements} compact label={planA.label} />
-        <TileGrid placements={planB.placements} compact label={planB.label} />
+        <TileGrid
+          placements={planA.placements}
+          compact
+          label={planA.label}
+          edges={visualSynergyEdges(planA.placements)}
+        />
+        <TileGrid
+          placements={planB.placements}
+          compact
+          label={planB.label}
+          edges={visualSynergyEdges(planB.placements)}
+        />
       </div>
 
       <div className="compare-layout">

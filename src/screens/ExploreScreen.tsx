@@ -13,6 +13,7 @@ import {
   getBadge,
   simulateGrid,
   spentBudget,
+  visualSynergyEdges,
   type IndicatorValues,
   type Placements,
   type ReasonKey,
@@ -86,6 +87,7 @@ export default function ExploreScreen({
   const remainingBudget = TILE_BUDGET - usedBudget;
   const currentSynergies = useMemo(() => activeSynergies(placements), [placements]);
   const currentBadge = useMemo(() => getBadge(values), [values]);
+  const currentEdges = useMemo(() => visualSynergyEdges(placements), [placements]);
 
   function handleCellClick(row: number, col: number) {
     const occupied = Object.prototype.hasOwnProperty.call(placements, `${row},${col}`);
@@ -227,9 +229,10 @@ export default function ExploreScreen({
             예산 <strong>{usedBudget}</strong> / {TILE_BUDGET} 사용 · 배치한 칸 {totalPlaced}개
             {armed && <span className="armed-hint"> · 빈 칸을 눌러 배치하세요</span>}
           </p>
-          <TileGrid placements={placements} onCellClick={handleCellClick} />
+          <TileGrid placements={placements} onCellClick={handleCellClick} edges={currentEdges} />
           <p className="muted grid-hint">
-            파란 칸은 승기천이에요. 하천과 맞닿은 칸에 무엇을 놓느냐에 따라 지표가 더 크게 바뀌어요.
+            파란 칸은 승기천이에요. 타일 사이에 그려지는 선은 시너지가 발동 중이라는 뜻이고, 파란
+            선은 하천과 맞닿아 있다는 뜻이에요. 한 칸이 여러 선으로 동시에 이어질 수도 있어요.
           </p>
         </div>
 
@@ -334,7 +337,7 @@ export default function ExploreScreen({
                     ×
                   </button>
                 </div>
-                <TileGrid placements={plan.placements} compact />
+                <TileGrid placements={plan.placements} compact edges={visualSynergyEdges(plan.placements)} />
                 <p className="plan-badge">
                   {getBadge(plan.values).icon} {getBadge(plan.values).label}
                 </p>
