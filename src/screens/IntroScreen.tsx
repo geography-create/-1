@@ -24,6 +24,27 @@ export default function IntroScreen({ onStart }: Props) {
         <p>선생님의 안내에 따라 손을 들어 의견을 나눠 보세요.</p>
       </div>
 
+      <div className="core-rules">
+        <h2>이번 시간 핵심 규칙 3가지</h2>
+        <ol>
+          <li>
+            <strong>예산 14 안에서 자유롭게.</strong> 타일마다 코스트(1~3)가 달라요. 무엇을 채우고
+            무엇을 비울지 예산 안에서 골라보세요.
+          </li>
+          <li>
+            <strong>맞닿으면 달라져요.</strong> 타일끼리, 또는 타일이 하천과 맞닿으면 추가 효과(시너지)가
+            생겨요. 화면의 "시너지 안내"에서 확인할 수 있어요.
+          </li>
+          <li>
+            <strong>안을 3개 저장해서 비교.</strong> 서로 다른 안을 만들어 저장하고, 무엇을 얻고 무엇을
+            포기했는지 비교해 보세요.
+          </li>
+        </ol>
+        <p className="muted">
+          그 외 도전 과제·칭호 같은 기능은 여유가 있을 때 살펴보는 선택 요소예요.
+        </p>
+      </div>
+
       <div className="notice-box">
         <h2>시작하기 전에</h2>
         <ul>
