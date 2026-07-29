@@ -164,7 +164,7 @@ export const TILE_TYPES: TileType[] = [
     maxCount: 4,
     description: "차와 사람이 다니도록 포장된 길이에요.",
     examples: "예: 차도, 인도, 자전거도로",
-    effects: { convenience: 6, water: -4, comfort: -7 },
+    effects: { convenience: 6, biodiversity: -2, water: -4, comfort: -7 },
     // 하천 옆 도로는 빗물에 섞인 기름·염화물이 바로 흘러들어 수질 위주로 더 깎여요.
     riverBonus: { water: -6, biodiversity: -2 },
   },
@@ -442,16 +442,17 @@ export const MISSIONS: Mission[] = [
     key: "clean-and-lively",
     label: "깨끗하고 북적이게",
     difficulty: "심화",
-    description: "이용 편의성 55 이상, 생태 다양성 55 이상, 수질 65 이상을 동시에 만족하는 안을 만들어보세요.",
-    targets: { convenience: 55, biodiversity: 55, water: 65 },
+    description:
+      "이용 편의성 60 이상, 생태 다양성 55 이상, 수질 65 이상을 동시에 만족하는 안을 만들어보세요. 도로·텃밭만으로는 편의성이 부족해요 — 다른 타일도 조금 섞어야 해요.",
+    targets: { convenience: 60, biodiversity: 55, water: 65 },
   },
   {
     key: "quiet-city-nature",
     label: "조용한 마을과 자연의 균형",
     difficulty: "최상",
     description:
-      "소음 쾌적성 60 이상, 이용 편의성 50 이상, 생태 다양성 50 이상을 동시에 만족하는 안을 만들어보세요. 도로·상업·전기시설을 많이 놓을수록 소음 쾌적성이 크게 떨어진다는 점에 주의하세요.",
-    targets: { comfort: 60, convenience: 50, biodiversity: 50 },
+      "소음 쾌적성 60 이상, 이용 편의성 60 이상, 생태 다양성 50 이상을 동시에 만족하는 안을 만들어보세요. 도로를 많이 놓을수록 소음 쾌적성이 크게 떨어진다는 점에 주의하세요.",
+    targets: { comfort: 60, convenience: 60, biodiversity: 50 },
   },
 ];
 
