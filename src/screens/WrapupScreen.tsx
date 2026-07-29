@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { TILE_TYPES, countByType, type ReasonKey, type SavedPlan } from "../data/grid";
+import { activeSynergies, getBadge, type ReasonKey, type SavedPlan } from "../data/grid";
 import { isSubmissionConfigured, submitToSheet } from "../lib/submit";
 import SpectrumBar, { type SpectrumMarker } from "../components/SpectrumBar";
 
@@ -65,8 +65,12 @@ export default function WrapupScreen({
     if (!canFinish || !finalPlan) return;
     setSubmitting(true);
 
-    const counts = countByType(finalPlan.placements);
-    const tileSummary = TILE_TYPES.map((t) => `${t.label} ${counts[t.key]}`).join(" · ");
+    const badge = getBadge(finalPlan.values);
+    const synergies = activeSynergies(finalPlan.placements);
+    const synergySummary =
+      synergies.length > 0
+        ? synergies.map(({ synergy, count }) => `${synergy.label}${count > 1 ? ` ×${count}` : ""}`).join(" · ")
+        : "없음";
 
     const ok = await submitToSheet({
       classNo: classNo.trim(),
@@ -75,7 +79,8 @@ export default function WrapupScreen({
       perspective: PERSPECTIVE_LABELS[finalPlan.reason],
       reasonNote: finalPlan.reasonNote,
       reflection: reflection.trim(),
-      tileSummary,
+      badge: `${badge.icon} ${badge.label}`,
+      synergySummary,
     });
 
     setSentToSheet(ok);

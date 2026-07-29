@@ -8,7 +8,8 @@ export interface SubmissionPayload {
   perspective: string;
   reasonNote: string;
   reflection: string;
-  tileSummary: string;
+  badge: string;
+  synergySummary: string;
 }
 
 const ENDPOINT = import.meta.env.VITE_SHEET_WEBHOOK_URL as string | undefined;

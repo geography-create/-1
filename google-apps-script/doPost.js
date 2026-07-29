@@ -16,7 +16,8 @@ function doPost(e) {
       "주의(관점)",
       "선택 이유 메모",
       "한 줄 성찰",
-      "최종 안 배치 요약",
+      "칭호",
+      "발동한 시너지",
     ]);
   }
 
@@ -30,7 +31,8 @@ function doPost(e) {
     data.perspective || "",
     data.reasonNote || "",
     data.reflection || "",
-    data.tileSummary || "",
+    data.badge || "",
+    data.synergySummary || "",
   ]);
 
   return ContentService.createTextOutput(

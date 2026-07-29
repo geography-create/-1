@@ -129,7 +129,8 @@ export const TILE_TYPES: TileType[] = [
     description: "사람들이 실제로 살아가는 공간이에요.",
     examples: "예: 아파트, 단독주택, 빌라",
     effects: { convenience: 6, biodiversity: -5, water: -3, comfort: -3 },
-    riverBonus: { biodiversity: -4, water: -4 },
+    // 하천 옆 주거지는 생활 오·폐수 유입 우려가 커서 수질 위주로 더 깎여요.
+    riverBonus: { water: -6, biodiversity: -2 },
   },
   {
     key: "building",
@@ -140,7 +141,8 @@ export const TILE_TYPES: TileType[] = [
     description: "사람들이 모이고 이용하는 건물이에요.",
     examples: "예: 가게, 식당, 도서관, 주민센터",
     effects: { convenience: 7, scenery: -6, biodiversity: -4, comfort: -6 },
-    riverBonus: { biodiversity: -4, water: -4 },
+    // 하천 옆 상업·공공건물은 부지가 넓어 서식지를 더 많이 잠식해요.
+    riverBonus: { biodiversity: -6, water: -2 },
   },
   {
     key: "power",
@@ -151,7 +153,8 @@ export const TILE_TYPES: TileType[] = [
     description: "생활에 꼭 필요한 기반 시설이에요.",
     examples: "예: 전봇대, 변전소, 가로등, 통신 중계기",
     effects: { convenience: 4, scenery: -7, biodiversity: -3, comfort: -5 },
-    riverBonus: { biodiversity: -4, water: -4 },
+    // 하천 옆 전기·통신 시설은 유지·보수 접근로가 서식지 통로를 끊어요.
+    riverBonus: { biodiversity: -6, water: -2 },
   },
   {
     key: "road",
@@ -162,7 +165,8 @@ export const TILE_TYPES: TileType[] = [
     description: "차와 사람이 다니도록 포장된 길이에요.",
     examples: "예: 차도, 인도, 자전거도로",
     effects: { convenience: 6, water: -4, comfort: -7 },
-    riverBonus: { biodiversity: -4, water: -4 },
+    // 하천 옆 도로는 빗물에 섞인 기름·염화물이 바로 흘러들어 수질 위주로 더 깎여요.
+    riverBonus: { water: -6, biodiversity: -2 },
   },
   {
     key: "park",
@@ -173,6 +177,7 @@ export const TILE_TYPES: TileType[] = [
     description: "나무를 심거나 가꾸는 녹지 공간이에요.",
     examples: "예: 공원, 주말농장, 화단, 산책로변 녹지",
     effects: { biodiversity: 6, water: 4, scenery: 3, convenience: 3, comfort: 5 },
+    // 하천 옆 텃밭·공원은 물가 식생 완충 지대 역할을 해서 생태·수질 모두 좋아져요.
     riverBonus: { biodiversity: 4, water: 4 },
   },
 ];
