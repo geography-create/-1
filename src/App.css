@@ -282,6 +282,12 @@
   text-align: center;
 }
 
+.tile-chip-cost {
+  font-size: 0.72rem;
+  color: var(--nature-dark);
+  font-weight: 600;
+}
+
 .tile-chip-count {
   font-size: 0.72rem;
   color: var(--ink-soft);
@@ -557,6 +563,44 @@
   display: inline-block;
 }
 
+.current-badge {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0 0 12px;
+  padding: 8px 10px;
+  background: #efe9fb;
+  border-radius: 10px;
+}
+
+.current-badge-icon {
+  font-size: 1.3rem;
+  line-height: 1.2;
+}
+
+.current-badge strong {
+  display: block;
+  color: var(--balance);
+  font-size: 0.9rem;
+}
+
+.current-badge-desc {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--ink-soft);
+}
+
+.synergy-active-list {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.8rem;
+  color: var(--nature-dark);
+}
+
 .indicator-bars {
   list-style: none;
   padding: 0;
@@ -688,6 +732,17 @@
 
 .icon-btn:hover {
   color: var(--danger);
+}
+
+.plan-badge {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--balance);
+  background: #efe9fb;
+  border-radius: 999px;
+  padding: 2px 10px;
+  display: inline-block;
+  width: fit-content;
 }
 
 .plan-reason {

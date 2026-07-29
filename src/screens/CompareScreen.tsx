@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { INDICATORS, REASON_OPTIONS, TILE_TYPES, countByType, type SavedPlan } from "../data/grid";
+import { INDICATORS, REASON_OPTIONS, TILE_TYPES, countByType, getBadge, type SavedPlan } from "../data/grid";
 import IndicatorRadar from "../components/IndicatorRadar";
 import TileGrid from "../components/TileGrid";
 
@@ -133,6 +133,16 @@ export default function CompareScreen({ savedPlans, onNext, onBack }: Props) {
             </p>
             <p>
               <strong>{planB.label}</strong>: {REASON_OPTIONS.find((r) => r.key === planB.reason)?.label}
+            </p>
+          </div>
+
+          <div className="compare-block">
+            <h2>칭호</h2>
+            <p>
+              <strong>{planA.label}</strong>: {getBadge(planA.values).icon} {getBadge(planA.values).label}
+            </p>
+            <p>
+              <strong>{planB.label}</strong>: {getBadge(planB.values).icon} {getBadge(planB.values).label}
             </p>
           </div>
         </div>

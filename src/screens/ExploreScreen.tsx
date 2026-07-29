@@ -3,12 +3,16 @@ import {
   INDICATORS,
   MISSIONS,
   REASON_OPTIONS,
+  SYNERGIES,
+  TILE_BUDGET,
   TILE_COMPAT_NOTE,
   TILE_TYPES,
-  TOTAL_BUDGET,
+  activeSynergies,
   checkMission,
   countByType,
+  getBadge,
   simulateGrid,
+  spentBudget,
   type IndicatorValues,
   type Placements,
   type ReasonKey,
@@ -55,6 +59,7 @@ export default function ExploreScreen({
   const [reason, setReason] = useState<ReasonKey | null>(null);
   const [note, setNote] = useState("");
   const [guideOpen, setGuideOpen] = useState(false);
+  const [synergyGuideOpen, setSynergyGuideOpen] = useState(false);
   const [missionOpen, setMissionOpen] = useState(false);
   const [achievedMissions, setAchievedMissions] = useState<Set<string>>(new Set());
 
@@ -77,6 +82,10 @@ export default function ExploreScreen({
     return r;
   }, [placedCounts]);
   const totalPlaced = Object.keys(placements).length;
+  const usedBudget = useMemo(() => spentBudget(placements), [placements]);
+  const remainingBudget = TILE_BUDGET - usedBudget;
+  const currentSynergies = useMemo(() => activeSynergies(placements), [placements]);
+  const currentBadge = useMemo(() => getBadge(values), [values]);
 
   function handleCellClick(row: number, col: number) {
     const occupied = Object.prototype.hasOwnProperty.call(placements, `${row},${col}`);
@@ -84,10 +93,11 @@ export default function ExploreScreen({
       onRemoveTile(row, col);
       return;
     }
-    if (armed && remaining[armed] > 0) {
-      onPlaceTile(row, col, armed);
-      if (remaining[armed] - 1 <= 0) setArmed(null);
-    }
+    if (!armed) return;
+    const type = TILE_TYPES.find((t) => t.key === armed);
+    if (!type || remaining[armed] <= 0 || type.cost > remainingBudget) return;
+    onPlaceTile(row, col, armed);
+    if (remaining[armed] - 1 <= 0 || type.cost > remainingBudget - type.cost) setArmed(null);
   }
 
   function confirmSave() {
@@ -105,14 +115,20 @@ export default function ExploreScreen({
         <h1>내가 정하는 승기천 마을</h1>
         <p className="lede">
           팔레트에서 타일을 고른 뒤 빈 칸을 눌러 배치하세요. 놓인 타일을 다시 누르면 없앨 수 있어요.
-          타일은 종류마다 <strong>2개씩, 총 {TOTAL_BUDGET}개</strong>만 쓸 수 있어요. 서로 다른 안을{" "}
-          <strong>3개</strong> 저장하고, 함께 오르지 않는 지표 짝이 있는지 찾아보세요.
+          타일마다 코스트가 달라서 <strong>예산 {TILE_BUDGET}</strong> 안에서 자유롭게 조합을 짤 수
+          있어요. 타일끼리 맞닿으면 추가 효과(시너지)가 생기니 배치 순서도 고민해 보세요. 서로 다른
+          안을 <strong>3개</strong> 저장하고, 함께 오르지 않는 지표 짝이 있는지 찾아보세요.
         </p>
       </header>
 
       <div className="explore-layout">
         <div className="grid-column">
-          <TilePalette armed={armed} remaining={remaining} onArm={setArmed} />
+          <TilePalette
+            armed={armed}
+            remaining={remaining}
+            remainingBudget={remainingBudget}
+            onArm={setArmed}
+          />
           <button
             type="button"
             className="ghost-btn small tile-guide-toggle"
@@ -135,6 +151,39 @@ export default function ExploreScreen({
                 ))}
               </ul>
               <p className="muted tile-guide-note">{TILE_COMPAT_NOTE}</p>
+            </div>
+          )}
+          <button
+            type="button"
+            className="ghost-btn small tile-guide-toggle"
+            onClick={() => setSynergyGuideOpen((o) => !o)}
+          >
+            {synergyGuideOpen ? "시너지 안내 닫기" : "🔗 시너지 안내 보기"}
+          </button>
+          {synergyGuideOpen && (
+            <div className="tile-guide panel">
+              <ul className="tile-guide-list">
+                {SYNERGIES.map((s) => {
+                  const [a, b] = s.pair;
+                  const typeA = TILE_TYPES.find((t) => t.key === a);
+                  const typeB = TILE_TYPES.find((t) => t.key === b);
+                  return (
+                    <li key={s.key}>
+                      <span className="tile-guide-icon">
+                        {typeA?.icon}
+                        {typeB?.icon}
+                      </span>
+                      <div>
+                        <p className="tile-guide-label">{s.label}</p>
+                        <p className="tile-guide-desc">{s.hint}</p>
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+              <p className="muted tile-guide-note">
+                타일이 가로·세로로 맞닿아 있으면 발동해요. 대각선은 해당하지 않아요.
+              </p>
             </div>
           )}
           <button
@@ -175,7 +224,7 @@ export default function ExploreScreen({
             </div>
           )}
           <p className="budget-line">
-            배치한 칸 <strong>{totalPlaced}</strong> / {TOTAL_BUDGET}
+            예산 <strong>{usedBudget}</strong> / {TILE_BUDGET} 사용 · 배치한 칸 {totalPlaced}개
             {armed && <span className="armed-hint"> · 빈 칸을 눌러 배치하세요</span>}
           </p>
           <TileGrid placements={placements} onCellClick={handleCellClick} />
@@ -186,7 +235,23 @@ export default function ExploreScreen({
 
         <aside className="explore-side">
           <div className="panel">
+            <p className="current-badge">
+              <span className="current-badge-icon">{currentBadge.icon}</span>
+              <span>
+                <strong>{currentBadge.label}</strong>
+                <span className="current-badge-desc">{currentBadge.description}</span>
+              </span>
+            </p>
             <IndicatorRadar datasets={[{ label: "현재 안", color: CURRENT_COLOR, values }]} size={260} />
+            {currentSynergies.length > 0 && (
+              <ul className="synergy-active-list">
+                {currentSynergies.map(({ synergy, count }) => (
+                  <li key={synergy.key}>
+                    🔗 {synergy.label} 발동 중{count > 1 ? ` ×${count}` : ""}
+                  </li>
+                ))}
+              </ul>
+            )}
             <ul className="indicator-bars">
               {INDICATORS.map((ind) => (
                 <li key={ind.key}>
@@ -270,6 +335,9 @@ export default function ExploreScreen({
                   </button>
                 </div>
                 <TileGrid placements={plan.placements} compact />
+                <p className="plan-badge">
+                  {getBadge(plan.values).icon} {getBadge(plan.values).label}
+                </p>
                 <p className="plan-reason">{REASON_OPTIONS.find((r) => r.key === plan.reason)?.label}</p>
                 {plan.reasonNote && <p className="plan-note">“{plan.reasonNote}”</p>}
                 <ul className="plan-mini-values">

@@ -94,6 +94,7 @@ export interface TileType {
   key: TileTypeKey;
   label: string;
   icon: string;
+  cost: number;
   maxCount: number;
   description: string;
   examples: string;
@@ -108,7 +109,8 @@ export const TILE_TYPES: TileType[] = [
     key: "residential",
     label: "주거지",
     icon: "🏠",
-    maxCount: 2,
+    cost: 3,
+    maxCount: 4,
     description: "사람들이 실제로 살아가는 공간이에요.",
     examples: "예: 아파트, 단독주택, 빌라",
     effects: { convenience: 6, biodiversity: -5, water: -3 },
@@ -118,7 +120,8 @@ export const TILE_TYPES: TileType[] = [
     key: "building",
     label: "상업·공공건물",
     icon: "🏢",
-    maxCount: 2,
+    cost: 3,
+    maxCount: 4,
     description: "사람들이 모이고 이용하는 건물이에요.",
     examples: "예: 가게, 식당, 도서관, 주민센터",
     effects: { convenience: 7, scenery: -6, biodiversity: -4 },
@@ -128,7 +131,8 @@ export const TILE_TYPES: TileType[] = [
     key: "power",
     label: "전기·통신 시설",
     icon: "⚡",
-    maxCount: 2,
+    cost: 2,
+    maxCount: 4,
     description: "생활에 꼭 필요한 기반 시설이에요.",
     examples: "예: 전봇대, 변전소, 가로등, 통신 중계기",
     effects: { convenience: 4, scenery: -7, biodiversity: -3 },
@@ -138,7 +142,8 @@ export const TILE_TYPES: TileType[] = [
     key: "road",
     label: "도로",
     icon: "🛣️",
-    maxCount: 2,
+    cost: 2,
+    maxCount: 4,
     description: "차와 사람이 다니도록 포장된 길이에요.",
     examples: "예: 차도, 인도, 자전거도로",
     effects: { convenience: 6, flood: -6, water: -4 },
@@ -148,7 +153,8 @@ export const TILE_TYPES: TileType[] = [
     key: "park",
     label: "텃밭·공원",
     icon: "🌳",
-    maxCount: 2,
+    cost: 1,
+    maxCount: 4,
     description: "나무를 심거나 가꾸는 녹지 공간이에요.",
     examples: "예: 공원, 주말농장, 화단, 산책로변 녹지",
     effects: { biodiversity: 6, water: 4, scenery: 3, convenience: 3, flood: 3 },
@@ -156,10 +162,11 @@ export const TILE_TYPES: TileType[] = [
   },
 ];
 
-export const TOTAL_BUDGET = TILE_TYPES.reduce((sum, t) => sum + t.maxCount, 0);
+// 타일마다 코스트가 달라요. 이 예산 안에서 자유롭게 조합을 짜야 해요.
+export const TILE_BUDGET = 14;
 
 export const TILE_COMPAT_NOTE =
-  "타일 종류는 서로 자유롭게 섞어 놓을 수 있어요. 예를 들어 상업·공공건물 바로 옆에 텃밭·공원을 두는 것도 가능해요. 다만 그 조합이 지표에 어떤 영향을 주는지는 직접 배치해 보며 확인해 보세요.";
+  "타일 종류는 서로 자유롭게 섞어 놓을 수 있어요. 예를 들어 상업·공공건물 바로 옆에 텃밭·공원을 두는 것도 가능해요. 다만 그 조합이 지표에 어떤 영향을 주는지는 직접 배치해 보며 확인해 보세요. 또한 특정 타일끼리 맞닿으면 추가로 지표가 바뀌는 '시너지'도 있어요 — 아래 시너지 안내를 참고하세요.";
 
 export const BASE_VALUES: IndicatorValues = {
   flood: 50,
@@ -171,6 +178,87 @@ export const BASE_VALUES: IndicatorValues = {
 
 // 칸 좌표("row,col") -> 그 칸에 놓인 타일 종류
 export type Placements = Record<string, TileTypeKey>;
+
+export interface Synergy {
+  key: string;
+  pair: [TileTypeKey, TileTypeKey];
+  label: string;
+  hint: string;
+  effects: Partial<Record<IndicatorKey, number>>;
+}
+
+// 두 타일이 서로 맞닿아 있을 때(하천과의 인접 여부와 무관) 추가로 발동하는 효과예요.
+export const SYNERGIES: Synergy[] = [
+  {
+    key: "park-residential",
+    pair: ["park", "residential"],
+    label: "생활 속 녹지",
+    hint: "텃밭·공원 바로 옆 주거지는 삶의 질과 생태 다양성이 함께 좋아져요.",
+    effects: { biodiversity: 3, convenience: 2 },
+  },
+  {
+    key: "park-park",
+    pair: ["park", "park"],
+    label: "연결된 녹지",
+    hint: "텃밭·공원끼리 맞닿으면 생물이 오가는 통로가 되어 생태 다양성이 크게 좋아져요.",
+    effects: { biodiversity: 4 },
+  },
+  {
+    key: "road-park",
+    pair: ["road", "park"],
+    label: "가로수길",
+    hint: "도로 옆 텃밭·공원은 가로수길처럼 느껴져서 경관과 편의가 함께 좋아져요.",
+    effects: { scenery: 2, convenience: 1 },
+  },
+  {
+    key: "building-building",
+    pair: ["building", "building"],
+    label: "상업지 과밀",
+    hint: "상업·공공건물이 두 개 붙어 있으면 혼잡해져서 오히려 편의성이 떨어져요.",
+    effects: { convenience: -3 },
+  },
+  {
+    key: "power-residential",
+    pair: ["power", "residential"],
+    label: "생활 인프라 민원",
+    hint: "전기·통신 시설 바로 옆 주거지는 경관에 대한 불만이 커져요.",
+    effects: { scenery: -3 },
+  },
+];
+
+const SYNERGY_MAP = new Map<string, Synergy>(
+  SYNERGIES.map((s) => [[...s.pair].sort().join("|"), s]),
+);
+
+function synergyFor(a: TileTypeKey, b: TileTypeKey): Synergy | undefined {
+  return SYNERGY_MAP.get([a, b].sort().join("|"));
+}
+
+// 맞닿은 두 칸을 한 번씩만 세기 위해 오른쪽·아래쪽 이웃만 확인해요.
+function adjacentFilledPairs(placements: Placements): [string, string][] {
+  const pairs: [string, string][] = [];
+  for (const key of Object.keys(placements)) {
+    const [row, col] = key.split(",").map(Number);
+    const rightKey = cellKey(row, col + 1);
+    const downKey = cellKey(row + 1, col);
+    if (placements[rightKey]) pairs.push([key, rightKey]);
+    if (placements[downKey]) pairs.push([key, downKey]);
+  }
+  return pairs;
+}
+
+export function activeSynergies(placements: Placements): { synergy: Synergy; count: number }[] {
+  const counts = new Map<string, number>();
+  for (const [a, b] of adjacentFilledPairs(placements)) {
+    const synergy = synergyFor(placements[a], placements[b]);
+    if (!synergy) continue;
+    counts.set(synergy.key, (counts.get(synergy.key) ?? 0) + 1);
+  }
+  return SYNERGIES.filter((s) => counts.has(s.key)).map((synergy) => ({
+    synergy,
+    count: counts.get(synergy.key)!,
+  }));
+}
 
 export function simulateGrid(placements: Placements): IndicatorValues {
   const totals: IndicatorValues = { ...BASE_VALUES };
@@ -187,6 +275,13 @@ export function simulateGrid(placements: Placements): IndicatorValues {
       }
     }
   }
+  for (const [a, b] of adjacentFilledPairs(placements)) {
+    const synergy = synergyFor(placements[a], placements[b]);
+    if (!synergy) continue;
+    for (const [ind, delta] of Object.entries(synergy.effects) as [IndicatorKey, number][]) {
+      totals[ind] += delta;
+    }
+  }
   const clamped = {} as IndicatorValues;
   for (const k of Object.keys(totals) as IndicatorKey[]) {
     clamped[k] = Math.max(0, Math.min(100, Math.round(totals[k])));
@@ -199,6 +294,15 @@ export function countByType(placements: Placements): Record<TileTypeKey, number>
   for (const t of TILE_TYPES) counts[t.key] = 0;
   for (const typeKey of Object.values(placements)) counts[typeKey]++;
   return counts;
+}
+
+export function spentBudget(placements: Placements): number {
+  let spent = 0;
+  for (const typeKey of Object.values(placements)) {
+    const type = TILE_TYPES.find((t) => t.key === typeKey);
+    if (type) spent += type.cost;
+  }
+  return spent;
 }
 
 export type ReasonKey = "human" | "nature" | "balance";
@@ -264,6 +368,70 @@ export function checkMission(mission: Mission, values: IndicatorValues): boolean
   return (Object.entries(mission.targets) as [IndicatorKey, number][]).every(
     ([key, min]) => values[key] >= min,
   );
+}
+
+export interface Badge {
+  key: string;
+  label: string;
+  icon: string;
+  description: string;
+}
+
+interface BadgeRule extends Badge {
+  test: (values: IndicatorValues) => boolean;
+}
+
+// 저장한 안의 지표 조합을 보고 자동으로 붙는 칭호예요. 위에서부터 먼저 맞는 것으로 정해져요.
+const BADGE_RULES: BadgeRule[] = [
+  {
+    key: "safety-first",
+    label: "안전 제일주의자",
+    icon: "🛡️",
+    description: "다른 무엇보다 홍수 안전성을 우선했어요.",
+    test: (v) => v.flood >= 55,
+  },
+  {
+    key: "eco-guardian",
+    label: "생태 지킴이",
+    icon: "🌿",
+    description: "생태 다양성과 수질을 특히 높게 지켰어요.",
+    test: (v) => v.biodiversity >= 82 && v.water >= 78,
+  },
+  {
+    key: "city-builder",
+    label: "번영 마을 건축가",
+    icon: "🏙️",
+    description: "이용 편의성을 크게 끌어올린 대신 자연은 많이 양보했어요.",
+    test: (v) => v.convenience >= 45 && v.biodiversity <= 55,
+  },
+  {
+    key: "balancer",
+    label: "균형 설계자",
+    icon: "⚖️",
+    description: "어느 한쪽에 치우치지 않고 골고루 신경 썼어요.",
+    test: (v) => {
+      const nums = Object.values(v);
+      return Math.max(...nums) - Math.min(...nums) <= 30 && v.convenience >= 32;
+    },
+  },
+  {
+    key: "untouched",
+    label: "손대지 않은 마을",
+    icon: "🌾",
+    description: "아직 마을에 큰 변화를 주지 않았어요.",
+    test: (v) => v.convenience <= 26,
+  },
+  {
+    key: "explorer",
+    label: "실험적 설계자",
+    icon: "🧪",
+    description: "독특한 조합을 시도하고 있어요.",
+    test: () => true,
+  },
+];
+
+export function getBadge(values: IndicatorValues): Badge {
+  return BADGE_RULES.find((rule) => rule.test(values))!;
 }
 
 export interface SavedPlan {
