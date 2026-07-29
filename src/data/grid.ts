@@ -3,7 +3,7 @@
 // 지표 수치는 교육용으로 설계한 가상 모델이며 실제 승기천 정비사업의 예측값이 아닙니다.
 
 export type IndicatorKey =
-  | "flood"
+  | "comfort"
   | "convenience"
   | "biodiversity"
   | "water"
@@ -19,10 +19,10 @@ export interface Indicator {
 
 export const INDICATORS: Indicator[] = [
   {
-    key: "flood",
-    label: "홍수 안전성",
-    shortLabel: "안전",
-    description: "폭우가 왔을 때 물이 넘치지 않고 잘 빠지는 정도예요.",
+    key: "comfort",
+    label: "소음 쾌적성",
+    shortLabel: "쾌적",
+    description: "차·사람이 몰리는 소음 없이 조용하고 편안하게 지낼 수 있는 정도예요.",
   },
   {
     key: "convenience",
@@ -128,7 +128,7 @@ export const TILE_TYPES: TileType[] = [
     maxCount: 4,
     description: "사람들이 실제로 살아가는 공간이에요.",
     examples: "예: 아파트, 단독주택, 빌라",
-    effects: { convenience: 6, biodiversity: -5, water: -3 },
+    effects: { convenience: 6, biodiversity: -5, water: -3, comfort: -3 },
     riverBonus: { biodiversity: -4, water: -4 },
   },
   {
@@ -139,7 +139,7 @@ export const TILE_TYPES: TileType[] = [
     maxCount: 4,
     description: "사람들이 모이고 이용하는 건물이에요.",
     examples: "예: 가게, 식당, 도서관, 주민센터",
-    effects: { convenience: 7, scenery: -6, biodiversity: -4 },
+    effects: { convenience: 7, scenery: -6, biodiversity: -4, comfort: -6 },
     riverBonus: { biodiversity: -4, water: -4 },
   },
   {
@@ -150,7 +150,7 @@ export const TILE_TYPES: TileType[] = [
     maxCount: 4,
     description: "생활에 꼭 필요한 기반 시설이에요.",
     examples: "예: 전봇대, 변전소, 가로등, 통신 중계기",
-    effects: { convenience: 4, scenery: -7, biodiversity: -3 },
+    effects: { convenience: 4, scenery: -7, biodiversity: -3, comfort: -5 },
     riverBonus: { biodiversity: -4, water: -4 },
   },
   {
@@ -161,7 +161,7 @@ export const TILE_TYPES: TileType[] = [
     maxCount: 4,
     description: "차와 사람이 다니도록 포장된 길이에요.",
     examples: "예: 차도, 인도, 자전거도로",
-    effects: { convenience: 6, flood: -6, water: -4 },
+    effects: { convenience: 6, water: -4, comfort: -7 },
     riverBonus: { biodiversity: -4, water: -4 },
   },
   {
@@ -172,7 +172,7 @@ export const TILE_TYPES: TileType[] = [
     maxCount: 4,
     description: "나무를 심거나 가꾸는 녹지 공간이에요.",
     examples: "예: 공원, 주말농장, 화단, 산책로변 녹지",
-    effects: { biodiversity: 6, water: 4, scenery: 3, convenience: 3, flood: 3 },
+    effects: { biodiversity: 6, water: 4, scenery: 3, convenience: 3, comfort: 5 },
     riverBonus: { biodiversity: 4, water: 4 },
   },
 ];
@@ -184,7 +184,7 @@ export const TILE_COMPAT_NOTE =
   "타일 종류는 서로 자유롭게 섞어 놓을 수 있어요. 예를 들어 상업·공공건물 바로 옆에 텃밭·공원을 두는 것도 가능해요. 다만 그 조합이 지표에 어떤 영향을 주는지는 직접 배치해 보며 확인해 보세요. 또한 특정 타일끼리 맞닿으면 추가로 지표가 바뀌는 '시너지'도 있어요 — 아래 시너지 안내를 참고하세요.";
 
 export const BASE_VALUES: IndicatorValues = {
-  flood: 50,
+  comfort: 78,
   convenience: 20,
   biodiversity: 80,
   water: 75,
@@ -441,12 +441,12 @@ export const MISSIONS: Mission[] = [
     targets: { convenience: 55, biodiversity: 55, water: 65 },
   },
   {
-    key: "safe-city-nature",
-    label: "안전한 마을과 자연의 균형",
+    key: "quiet-city-nature",
+    label: "조용한 마을과 자연의 균형",
     difficulty: "최상",
     description:
-      "홍수 안전성 47 이상, 이용 편의성 55 이상, 생태 다양성 55 이상을 동시에 만족하는 안을 만들어보세요. 도로를 많이 놓을수록 홍수 안전성이 크게 떨어진다는 점에 주의하세요.",
-    targets: { flood: 47, convenience: 55, biodiversity: 55 },
+      "소음 쾌적성 60 이상, 이용 편의성 50 이상, 생태 다양성 50 이상을 동시에 만족하는 안을 만들어보세요. 도로·상업·전기시설을 많이 놓을수록 소음 쾌적성이 크게 떨어진다는 점에 주의하세요.",
+    targets: { comfort: 60, convenience: 50, biodiversity: 50 },
   },
 ];
 
@@ -470,11 +470,11 @@ interface BadgeRule extends Badge {
 // 저장한 안의 지표 조합을 보고 자동으로 붙는 칭호예요. 위에서부터 먼저 맞는 것으로 정해져요.
 const BADGE_RULES: BadgeRule[] = [
   {
-    key: "safety-first",
-    label: "안전 제일주의자",
-    icon: "🛡️",
-    description: "다른 무엇보다 홍수 안전성을 우선했어요.",
-    test: (v) => v.flood >= 55,
+    key: "quiet-town",
+    label: "조용한 마을 설계자",
+    icon: "🤫",
+    description: "다른 무엇보다 소음 없는 조용한 환경을 우선했어요.",
+    test: (v) => v.comfort >= 88,
   },
   {
     key: "eco-guardian",
@@ -496,7 +496,7 @@ const BADGE_RULES: BadgeRule[] = [
     icon: "⚖️",
     description: "어느 한쪽에 치우치지 않고 골고루 신경 썼어요.",
     test: (v) => {
-      const nums = [v.flood, v.convenience, v.biodiversity, v.water, v.scenery];
+      const nums = [v.comfort, v.convenience, v.biodiversity, v.water, v.scenery];
       return Math.max(...nums) - Math.min(...nums) <= 30 && v.convenience >= 32;
     },
   },
