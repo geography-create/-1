@@ -1,4 +1,6 @@
-import type { ReasonKey, SavedPlan } from "../data/grid";
+import { useState } from "react";
+import { TILE_TYPES, countByType, type ReasonKey, type SavedPlan } from "../data/grid";
+import { isSubmissionConfigured, submitToSheet } from "../lib/submit";
 import SpectrumBar, { type SpectrumMarker } from "../components/SpectrumBar";
 
 interface Props {
@@ -16,6 +18,12 @@ const REASON_POSITION: Record<ReasonKey, number> = {
   nature: 86,
 };
 
+const PERSPECTIVE_LABELS: Record<ReasonKey, string> = {
+  human: "인간중심주의",
+  balance: "균형·조화",
+  nature: "생태중심주의",
+};
+
 const MARKER_COLORS = ["#c96f34", "#7a6fb0", "#2f6f5e", "#3f7dc4", "#b0546f"];
 
 export default function WrapupScreen({
@@ -26,6 +34,12 @@ export default function WrapupScreen({
   onFinish,
   onBack,
 }: Props) {
+  const [classNo, setClassNo] = useState("");
+  const [studentNo, setStudentNo] = useState("");
+  const [name, setName] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [sentToSheet, setSentToSheet] = useState(false);
+
   const finalPlan = savedPlans[savedPlans.length - 1];
 
   const markers: SpectrumMarker[] = savedPlans.map((plan, i) => {
@@ -39,6 +53,35 @@ export default function WrapupScreen({
       emphasized: plan.id === finalPlan?.id,
     };
   });
+
+  const canFinish =
+    Boolean(reflection.trim()) &&
+    Boolean(classNo.trim()) &&
+    Boolean(studentNo.trim()) &&
+    Boolean(name.trim()) &&
+    savedPlans.length > 0;
+
+  async function handleFinish() {
+    if (!canFinish || !finalPlan) return;
+    setSubmitting(true);
+
+    const counts = countByType(finalPlan.placements);
+    const tileSummary = TILE_TYPES.map((t) => `${t.label} ${counts[t.key]}`).join(" · ");
+
+    const ok = await submitToSheet({
+      classNo: classNo.trim(),
+      studentNo: studentNo.trim(),
+      name: name.trim(),
+      perspective: PERSPECTIVE_LABELS[finalPlan.reason],
+      reasonNote: finalPlan.reasonNote,
+      reflection: reflection.trim(),
+      tileSummary,
+    });
+
+    setSentToSheet(ok);
+    setSubmitting(false);
+    onFinish();
+  }
 
   return (
     <section className="screen wrapup-screen">
@@ -93,30 +136,63 @@ export default function WrapupScreen({
           value={reflection}
           onChange={(e) => onReflectionChange(e.target.value)}
           placeholder="예) 나는 산책로를 넓히고 싶었지만, 짝은 물고기가 다칠까봐 반대했다..."
+          disabled={finished}
         />
       </div>
 
-      {finished ? (
+      {!finished && (
+        <div className="panel">
+          <h2>제출 정보</h2>
+          <p className="muted">
+            선생님이 결과를 확인할 수 있도록 반·번호·이름을 입력해 주세요.
+            {isSubmissionConfigured()
+              ? " 작성 완료를 누르면 이 정보와 한 줄 성찰이 선생님의 구글 시트로 전송돼요."
+              : " (현재는 시트 연동이 설정되지 않아 이 기기에만 표시돼요.)"}
+          </p>
+          <div className="submit-fields">
+            <label>
+              반
+              <input type="text" inputMode="numeric" value={classNo} onChange={(e) => setClassNo(e.target.value)} placeholder="예) 3" />
+            </label>
+            <label>
+              번호
+              <input type="text" inputMode="numeric" value={studentNo} onChange={(e) => setStudentNo(e.target.value)} placeholder="예) 12" />
+            </label>
+            <label className="submit-field-name">
+              이름
+              <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="예) 홍길동" />
+            </label>
+          </div>
+        </div>
+      )}
+
+      {finished && (
         <div className="notice-box success">
           <h2>작성 완료</h2>
-          <p>선생님이 화면을 확인하러 오실 거예요. 새로고침하면 기록이 사라지니 그대로 기다려 주세요.</p>
+          <p>
+            {isSubmissionConfigured()
+              ? sentToSheet
+                ? "선생님의 구글 시트로 제출을 시도했어요. 실제로 기록됐는지는 선생님이 시트에서 확인해 주세요."
+                : "시트로 전송하는 데 실패했어요. 네트워크 연결을 확인하고 선생님께 알려주세요."
+              : "이 기기에서 작성이 완료됐어요. 시트 연동이 설정되지 않아 별도로 전송되지는 않았어요."}
+          </p>
+          <p>새로고침하면 기록이 사라지니, 선생님이 확인할 때까지 화면을 그대로 두세요.</p>
         </div>
-      ) : (
-        <footer className="screen-footer">
-          <button type="button" className="ghost-btn" onClick={onBack}>
-            ← 비교로
-          </button>
-          <button
-            type="button"
-            className="primary-btn"
-            onClick={onFinish}
-            disabled={!reflection.trim() || savedPlans.length === 0}
-          >
-            작성 완료
-          </button>
-        </footer>
       )}
-      {!finished && !reflection.trim() && <p className="muted">한 줄 성찰을 작성하면 완료할 수 있어요.</p>}
+
+      <footer className="screen-footer">
+        <button type="button" className="ghost-btn" onClick={onBack}>
+          ← 비교로
+        </button>
+        {!finished && (
+          <button type="button" className="primary-btn" onClick={handleFinish} disabled={!canFinish || submitting}>
+            {submitting ? "제출 중..." : "작성 완료"}
+          </button>
+        )}
+      </footer>
+      {!finished && !canFinish && (
+        <p className="muted">반·번호·이름을 모두 입력하고 한 줄 성찰을 작성하면 완료할 수 있어요.</p>
+      )}
     </section>
   );
 }

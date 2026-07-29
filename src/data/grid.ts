@@ -96,6 +96,7 @@ export interface TileType {
   icon: string;
   maxCount: number;
   description: string;
+  examples: string;
   // 타일 하나를 놓았을 때의 지표 변화량
   effects: Partial<Record<IndicatorKey, number>>;
   // 하천과 맞닿은 칸에 놓였을 때 추가로 더해지는 변화량
@@ -108,7 +109,8 @@ export const TILE_TYPES: TileType[] = [
     label: "주거지",
     icon: "🏠",
     maxCount: 2,
-    description: "사람들이 사는 집이에요.",
+    description: "사람들이 실제로 살아가는 공간이에요.",
+    examples: "예: 아파트, 단독주택, 빌라",
     effects: { convenience: 6, biodiversity: -5, water: -3 },
     riverBonus: { biodiversity: -4, water: -4 },
   },
@@ -117,7 +119,8 @@ export const TILE_TYPES: TileType[] = [
     label: "상업·공공건물",
     icon: "🏢",
     maxCount: 2,
-    description: "가게나 관공서 같은 건물이에요.",
+    description: "사람들이 모이고 이용하는 건물이에요.",
+    examples: "예: 가게, 식당, 도서관, 주민센터",
     effects: { convenience: 7, scenery: -6, biodiversity: -4 },
     riverBonus: { biodiversity: -4, water: -4 },
   },
@@ -126,7 +129,8 @@ export const TILE_TYPES: TileType[] = [
     label: "전기·통신 시설",
     icon: "⚡",
     maxCount: 2,
-    description: "전봇대, 변전 시설처럼 생활에 필요한 기반 시설이에요.",
+    description: "생활에 꼭 필요한 기반 시설이에요.",
+    examples: "예: 전봇대, 변전소, 가로등, 통신 중계기",
     effects: { convenience: 4, scenery: -7, biodiversity: -3 },
     riverBonus: { biodiversity: -4, water: -4 },
   },
@@ -135,7 +139,8 @@ export const TILE_TYPES: TileType[] = [
     label: "도로",
     icon: "🛣️",
     maxCount: 2,
-    description: "차와 사람이 다니는 포장된 길이에요.",
+    description: "차와 사람이 다니도록 포장된 길이에요.",
+    examples: "예: 차도, 인도, 자전거도로",
     effects: { convenience: 6, flood: -6, water: -4 },
     riverBonus: { biodiversity: -4, water: -4 },
   },
@@ -144,13 +149,17 @@ export const TILE_TYPES: TileType[] = [
     label: "텃밭·공원",
     icon: "🌳",
     maxCount: 2,
-    description: "나무를 심거나 텃밭을 가꾸는 녹지예요.",
+    description: "나무를 심거나 가꾸는 녹지 공간이에요.",
+    examples: "예: 공원, 주말농장, 화단, 산책로변 녹지",
     effects: { biodiversity: 6, water: 4, scenery: 3, convenience: 3, flood: 3 },
     riverBonus: { biodiversity: 4, water: 4 },
   },
 ];
 
 export const TOTAL_BUDGET = TILE_TYPES.reduce((sum, t) => sum + t.maxCount, 0);
+
+export const TILE_COMPAT_NOTE =
+  "타일 종류는 서로 자유롭게 섞어 놓을 수 있어요. 예를 들어 상업·공공건물 바로 옆에 텃밭·공원을 두는 것도 가능해요. 다만 그 조합이 지표에 어떤 영향을 주는지는 직접 배치해 보며 확인해 보세요.";
 
 export const BASE_VALUES: IndicatorValues = {
   flood: 50,

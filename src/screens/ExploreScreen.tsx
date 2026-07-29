@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import {
   INDICATORS,
   REASON_OPTIONS,
+  TILE_COMPAT_NOTE,
   TILE_TYPES,
   TOTAL_BUDGET,
   countByType,
@@ -28,6 +29,7 @@ interface Props {
   onLoadPlan: (id: string) => void;
   onDeletePlan: (id: string) => void;
   onNext: () => void;
+  onBack: () => void;
 }
 
 const CURRENT_COLOR = "#2f6f5e";
@@ -44,11 +46,13 @@ export default function ExploreScreen({
   onLoadPlan,
   onDeletePlan,
   onNext,
+  onBack,
 }: Props) {
   const [armed, setArmed] = useState<TileTypeKey | null>(null);
   const [savePanelOpen, setSavePanelOpen] = useState(false);
   const [reason, setReason] = useState<ReasonKey | null>(null);
   const [note, setNote] = useState("");
+  const [guideOpen, setGuideOpen] = useState(false);
 
   const values: IndicatorValues = useMemo(() => simulateGrid(placements), [placements]);
   const placedCounts = useMemo(() => countByType(placements), [placements]);
@@ -94,6 +98,30 @@ export default function ExploreScreen({
       <div className="explore-layout">
         <div className="grid-column">
           <TilePalette armed={armed} remaining={remaining} onArm={setArmed} />
+          <button
+            type="button"
+            className="ghost-btn small tile-guide-toggle"
+            onClick={() => setGuideOpen((o) => !o)}
+          >
+            {guideOpen ? "타일 안내 닫기" : "ⓘ 타일 안내 보기"}
+          </button>
+          {guideOpen && (
+            <div className="tile-guide panel">
+              <ul className="tile-guide-list">
+                {TILE_TYPES.map((t) => (
+                  <li key={t.key}>
+                    <span className="tile-guide-icon">{t.icon}</span>
+                    <div>
+                      <p className="tile-guide-label">{t.label}</p>
+                      <p className="tile-guide-desc">{t.description}</p>
+                      <p className="tile-guide-examples">{t.examples}</p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+              <p className="muted tile-guide-note">{TILE_COMPAT_NOTE}</p>
+            </div>
+          )}
           <p className="budget-line">
             배치한 칸 <strong>{totalPlaced}</strong> / {TOTAL_BUDGET}
             {armed && <span className="armed-hint"> · 빈 칸을 눌러 배치하세요</span>}
@@ -209,6 +237,9 @@ export default function ExploreScreen({
       </div>
 
       <footer className="screen-footer">
+        <button type="button" className="ghost-btn" onClick={onBack}>
+          ← 도입으로
+        </button>
         <button type="button" className="primary-btn" onClick={onNext} disabled={savedPlans.length < 2}>
           다음: 모둠과 비교하기 →
         </button>

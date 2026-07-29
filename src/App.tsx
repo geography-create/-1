@@ -123,6 +123,7 @@ function App() {
             onLoadPlan={handleLoadPlan}
             onDeletePlan={handleDeletePlan}
             onNext={() => setScreen("compare")}
+            onBack={() => setScreen("intro")}
           />
         )}
         {screen === "compare" && (

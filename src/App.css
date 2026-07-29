@@ -292,6 +292,58 @@
   color: var(--ink-soft);
 }
 
+.tile-guide-toggle {
+  align-self: flex-start;
+}
+
+.tile-guide {
+  padding: 14px 16px;
+}
+
+.tile-guide-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.tile-guide-list li {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.tile-guide-icon {
+  font-size: 1.3rem;
+  line-height: 1.3;
+}
+
+.tile-guide-label {
+  font-weight: 700;
+  font-size: 0.88rem;
+  margin: 0;
+}
+
+.tile-guide-desc {
+  font-size: 0.82rem;
+  color: var(--ink-soft);
+  margin: 2px 0 0;
+}
+
+.tile-guide-examples {
+  font-size: 0.78rem;
+  color: var(--nature-dark);
+  margin: 2px 0 0;
+}
+
+.tile-guide-note {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--border);
+}
+
 .armed-hint {
   color: var(--nature);
   font-weight: 600;
@@ -749,6 +801,29 @@
   margin-top: 10px;
 }
 
+.submit-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr 2fr;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.submit-fields label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
+.submit-fields input {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font: inherit;
+}
+
 .concept-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -875,5 +950,13 @@
 
   .compare-grids {
     gap: 14px;
+  }
+
+  .submit-fields {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .submit-field-name {
+    grid-column: 1 / -1;
   }
 }
