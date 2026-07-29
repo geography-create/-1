@@ -61,6 +61,7 @@ export default function ExploreScreen({
   const [note, setNote] = useState("");
   const [guideOpen, setGuideOpen] = useState(false);
   const [synergyGuideOpen, setSynergyGuideOpen] = useState(false);
+  const [indicatorGuideOpen, setIndicatorGuideOpen] = useState(false);
   const [missionOpen, setMissionOpen] = useState(false);
   const [achievedMissions, setAchievedMissions] = useState<Set<string>>(new Set());
 
@@ -271,6 +272,25 @@ export default function ExploreScreen({
                 </li>
               ))}
             </ul>
+            <button
+              type="button"
+              className="ghost-btn small tile-guide-toggle indicator-guide-toggle"
+              onClick={() => setIndicatorGuideOpen((o) => !o)}
+            >
+              {indicatorGuideOpen ? "지표 설명 닫기" : "ⓘ 지표 설명 보기"}
+            </button>
+            {indicatorGuideOpen && (
+              <ul className="tile-guide-list indicator-guide-list">
+                {INDICATORS.map((ind) => (
+                  <li key={ind.key}>
+                    <div>
+                      <p className="tile-guide-label">{ind.label}</p>
+                      <p className="tile-guide-desc">{ind.description}</p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
 
             <div className="explore-actions">
               <button type="button" className="ghost-btn" onClick={onUndo} disabled={!canUndo}>

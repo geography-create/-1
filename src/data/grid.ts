@@ -358,12 +358,20 @@ export function simulateGrid(placements: Placements): IndicatorValues {
   return clamped;
 }
 
-// 주민 수용성 = 이용 편의성과 자연 지표(생태·수질·경관 평균)가 가까울수록 높아요.
-// 어느 한쪽으로 크게 치우친 계획은 그만큼 불만을 사서 수용성이 떨어져요.
+// 주민 수용성 = 두 방향의 불만을 각각 따로 계산해서 뺀 값이에요.
+// 이용 편의성이 너무 낮으면 "왜 이렇게 불편하게 두냐"는 불만이, 자연 지표(생태·수질·경관
+// 평균)가 너무 낮으면 "너무 많이 훼손했다"는 불만이 커져요. 둘을 별도로 계산하기 때문에
+// 한쪽만 극단으로 밀어붙여도(예: 예산을 편의 시설에 몰아서 자연을 크게 훼손) 수용성이
+// 떨어지고, 반대로 아무것도 안 지어 편의가 방치돼도 수용성이 떨어져요.
+const ACCEPTANCE_CONVENIENCE_MIN = 45;
+const ACCEPTANCE_NATURE_MIN = 65;
+const ACCEPTANCE_PENALTY_FACTOR = 2.5;
+
 function computeAcceptance(values: IndicatorValues): number {
   const natureAvg = (values.biodiversity + values.water + values.scenery) / 3;
-  const gap = Math.abs(values.convenience - natureAvg);
-  const penalty = Math.max(0, gap - 15) * 1.3;
+  const underdevelopedComplaint = Math.max(0, ACCEPTANCE_CONVENIENCE_MIN - values.convenience);
+  const overdevelopedComplaint = Math.max(0, ACCEPTANCE_NATURE_MIN - natureAvg);
+  const penalty = (underdevelopedComplaint + overdevelopedComplaint) * ACCEPTANCE_PENALTY_FACTOR;
   return Math.max(0, Math.min(100, Math.round(100 - penalty)));
 }
 

@@ -302,6 +302,18 @@
   align-self: flex-start;
 }
 
+.indicator-guide-toggle {
+  margin-top: 10px;
+  width: 100%;
+}
+
+.indicator-guide-list {
+  margin-top: 8px;
+  padding: 10px 12px;
+  background: var(--bg);
+  border-radius: 10px;
+}
+
 .tile-guide {
   padding: 14px 16px;
 }
