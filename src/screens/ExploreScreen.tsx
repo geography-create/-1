@@ -1,10 +1,12 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   INDICATORS,
+  MISSIONS,
   REASON_OPTIONS,
   TILE_COMPAT_NOTE,
   TILE_TYPES,
   TOTAL_BUDGET,
+  checkMission,
   countByType,
   simulateGrid,
   type IndicatorValues,
@@ -53,8 +55,21 @@ export default function ExploreScreen({
   const [reason, setReason] = useState<ReasonKey | null>(null);
   const [note, setNote] = useState("");
   const [guideOpen, setGuideOpen] = useState(false);
+  const [missionOpen, setMissionOpen] = useState(false);
+  const [achievedMissions, setAchievedMissions] = useState<Set<string>>(new Set());
 
   const values: IndicatorValues = useMemo(() => simulateGrid(placements), [placements]);
+
+  useEffect(() => {
+    const newlyAchieved = MISSIONS.filter((m) => checkMission(m, values)).map((m) => m.key);
+    if (newlyAchieved.length === 0) return;
+    setAchievedMissions((prev) => {
+      if (newlyAchieved.every((key) => prev.has(key))) return prev;
+      const next = new Set(prev);
+      for (const key of newlyAchieved) next.add(key);
+      return next;
+    });
+  }, [values]);
   const placedCounts = useMemo(() => countByType(placements), [placements]);
   const remaining = useMemo(() => {
     const r = {} as Record<TileTypeKey, number>;
@@ -120,6 +135,43 @@ export default function ExploreScreen({
                 ))}
               </ul>
               <p className="muted tile-guide-note">{TILE_COMPAT_NOTE}</p>
+            </div>
+          )}
+          <button
+            type="button"
+            className="ghost-btn small tile-guide-toggle"
+            onClick={() => setMissionOpen((o) => !o)}
+          >
+            {missionOpen ? "도전 과제 닫기" : "🏅 도전 과제 보기 (다 하고도 시간이 남았다면)"}
+          </button>
+          {missionOpen && (
+            <div className="mission-guide panel">
+              <p className="muted tile-guide-note">
+                필수는 아니에요. 기본 활동(안 2개 이상 저장)을 마치고도 시간이 남으면 도전해 보세요.
+                여러 지표를 동시에 만족시켜야 하므로 타일 조합을 계속 바꿔보며 찾아야 해요.
+              </p>
+              <ul className="mission-list">
+                {MISSIONS.map((m) => {
+                  const done = checkMission(m, values);
+                  const everDone = achievedMissions.has(m.key);
+                  return (
+                    <li key={m.key} className={`mission-item${done ? " done" : ""}`}>
+                      <div className="mission-item-head">
+                        <span className={`mission-difficulty mission-difficulty-${m.difficulty}`}>
+                          {m.difficulty}
+                        </span>
+                        <strong>{m.label}</strong>
+                        {everDone && (
+                          <span className="mission-badge">
+                            {done ? "✅ 지금 이 안으로 달성 중" : "☑ 이전에 달성함"}
+                          </span>
+                        )}
+                      </div>
+                      <p className="mission-desc">{m.description}</p>
+                    </li>
+                  );
+                })}
+              </ul>
             </div>
           )}
           <p className="budget-line">

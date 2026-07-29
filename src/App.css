@@ -344,6 +344,69 @@
   border-top: 1px dashed var(--border);
 }
 
+.mission-guide {
+  padding: 14px 16px;
+}
+
+.mission-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.mission-item {
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg);
+}
+
+.mission-item.done {
+  border-color: var(--nature);
+  background: var(--nature-light);
+}
+
+.mission-item-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.mission-difficulty {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--human-light);
+  color: var(--human);
+}
+
+.mission-difficulty-심화 {
+  background: var(--nature-light);
+  color: var(--nature-dark);
+}
+
+.mission-difficulty-최상 {
+  background: #efe9fb;
+  color: var(--balance);
+}
+
+.mission-badge {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--nature-dark);
+}
+
+.mission-desc {
+  font-size: 0.82rem;
+  color: var(--ink-soft);
+  margin: 6px 0 0;
+}
+
 .armed-hint {
   color: var(--nature);
   font-weight: 600;

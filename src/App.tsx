@@ -28,6 +28,9 @@ function App() {
   const [reflection, setReflection] = useState("");
   const [finished, setFinished] = useState(false);
   const [guideOpen, setGuideOpen] = useState(false);
+  const [isTeacher] = useState(
+    () => new URLSearchParams(window.location.search).get("teacher") === "1",
+  );
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -145,7 +148,7 @@ function App() {
         )}
       </main>
 
-      <TeacherGuide open={guideOpen} onToggle={() => setGuideOpen((o) => !o)} />
+      {isTeacher && <TeacherGuide open={guideOpen} onToggle={() => setGuideOpen((o) => !o)} />}
     </div>
   );
 }

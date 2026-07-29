@@ -227,6 +227,45 @@ export const REASON_OPTIONS: ReasonOption[] = [
   },
 ];
 
+export interface Mission {
+  key: string;
+  label: string;
+  difficulty: "기본" | "심화" | "최상";
+  description: string;
+  targets: Partial<Record<IndicatorKey, number>>;
+}
+
+export const MISSIONS: Mission[] = [
+  {
+    key: "convenience-nature",
+    label: "사람도 자연도",
+    difficulty: "기본",
+    description: "이용 편의성 50 이상과 생태 다양성 60 이상을 동시에 만족하는 안을 만들어보세요.",
+    targets: { convenience: 50, biodiversity: 60 },
+  },
+  {
+    key: "clean-and-lively",
+    label: "깨끗하고 북적이게",
+    difficulty: "심화",
+    description: "이용 편의성 55 이상, 생태 다양성 55 이상, 수질 65 이상을 동시에 만족하는 안을 만들어보세요.",
+    targets: { convenience: 55, biodiversity: 55, water: 65 },
+  },
+  {
+    key: "safe-city-nature",
+    label: "안전한 마을과 자연의 균형",
+    difficulty: "최상",
+    description:
+      "홍수 안전성 47 이상, 이용 편의성 55 이상, 생태 다양성 55 이상을 동시에 만족하는 안을 만들어보세요. 도로를 많이 놓을수록 홍수 안전성이 크게 떨어진다는 점에 주의하세요.",
+    targets: { flood: 47, convenience: 55, biodiversity: 55 },
+  },
+];
+
+export function checkMission(mission: Mission, values: IndicatorValues): boolean {
+  return (Object.entries(mission.targets) as [IndicatorKey, number][]).every(
+    ([key, min]) => values[key] >= min,
+  );
+}
+
 export interface SavedPlan {
   id: string;
   label: string;
