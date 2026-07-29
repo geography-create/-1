@@ -231,8 +231,8 @@ export default function ExploreScreen({
           </p>
           <TileGrid placements={placements} onCellClick={handleCellClick} edges={currentEdges} />
           <p className="muted grid-hint">
-            파란 칸은 승기천이에요. 타일 사이에 그려지는 선은 시너지가 발동 중이라는 뜻이고, 파란
-            선은 하천과 맞닿아 있다는 뜻이에요. 한 칸이 여러 선으로 동시에 이어질 수도 있어요.
+            파란 칸은 승기천이에요. 두 칸을 옅게 감싸는 색은 시너지가 발동 중이라는 뜻이고, 옅은
+            파란빛은 하천과 맞닿아 있다는 뜻이에요. 한 칸이 여러 색으로 동시에 물들 수도 있어요.
           </p>
         </div>
 

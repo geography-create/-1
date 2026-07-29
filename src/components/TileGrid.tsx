@@ -54,21 +54,30 @@ export default function TileGrid({ placements, onCellClick, compact, label, edge
             preserveAspectRatio="none"
             aria-hidden="true"
           >
-            {edges.map((e) => (
-              <line
-                key={e.key}
-                x1={e.from.col + 0.5}
-                y1={e.from.row + 0.5}
-                x2={e.to.col + 0.5}
-                y2={e.to.row + 0.5}
-                stroke={e.color}
-                strokeWidth={0.16}
-                strokeLinecap="round"
-                opacity={0.8}
-              >
-                <title>{e.label}</title>
-              </line>
-            ))}
+            {edges.map((e) => {
+              const inset = 0.12;
+              const horizontal = e.from.row === e.to.row;
+              const minCol = Math.min(e.from.col, e.to.col);
+              const minRow = Math.min(e.from.row, e.to.row);
+              const x = minCol + inset;
+              const y = minRow + inset;
+              const width = (horizontal ? 2 : 1) - inset * 2;
+              const height = (horizontal ? 1 : 2) - inset * 2;
+              return (
+                <rect
+                  key={e.key}
+                  x={x}
+                  y={y}
+                  width={width}
+                  height={height}
+                  rx={0.22}
+                  fill={e.color}
+                  fillOpacity={0.28}
+                >
+                  <title>{e.label}</title>
+                </rect>
+              );
+            })}
           </svg>
         )}
       </div>
