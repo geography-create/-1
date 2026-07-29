@@ -362,6 +362,26 @@
   border-top: 1px dashed var(--border);
 }
 
+.river-effect-note .tile-guide-label {
+  margin-bottom: 6px;
+}
+
+.river-effect-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.82rem;
+  color: var(--ink-soft);
+}
+
+.river-effect-list .tile-guide-icon {
+  font-size: 1rem;
+  margin-right: 4px;
+}
+
 .mission-guide {
   padding: 14px 16px;
 }

@@ -41,6 +41,31 @@ interface Props {
 
 const CURRENT_COLOR = "#2f6f5e";
 
+function formatEffects(effects: Partial<Record<string, number>>): string {
+  return Object.entries(effects)
+    .map(([key, delta]) => {
+      const ind = INDICATORS.find((i) => i.key === key);
+      const sign = (delta ?? 0) > 0 ? "+" : "";
+      return `${ind?.shortLabel ?? key} ${sign}${delta}`;
+    })
+    .join(" · ");
+}
+
+function groupedRiverBonuses() {
+  const groups = new Map<string, { icons: string; labels: string[]; effects: Partial<Record<string, number>> }>();
+  for (const t of TILE_TYPES) {
+    const sig = JSON.stringify(t.riverBonus);
+    const existing = groups.get(sig);
+    if (existing) {
+      existing.icons += t.icon;
+      existing.labels.push(t.label);
+    } else {
+      groups.set(sig, { icons: t.icon, labels: [t.label], effects: t.riverBonus });
+    }
+  }
+  return [...groups.values()];
+}
+
 export default function ExploreScreen({
   placements,
   onPlaceTile,
@@ -187,6 +212,17 @@ export default function ExploreScreen({
               <p className="muted tile-guide-note">
                 타일이 가로·세로로 맞닿아 있으면 발동해요. 대각선은 해당하지 않아요.
               </p>
+              <div className="tile-guide-note river-effect-note">
+                <p className="tile-guide-label">🌊 하천과 맞닿았을 때 (파란 배경)</p>
+                <ul className="river-effect-list">
+                  {groupedRiverBonuses().map((g) => (
+                    <li key={g.labels.join(",")}>
+                      <span className="tile-guide-icon">{g.icons}</span>
+                      {g.labels.join("·")}: {formatEffects(g.effects)}
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </div>
           )}
           <button
@@ -233,7 +269,8 @@ export default function ExploreScreen({
           <TileGrid placements={placements} onCellClick={handleCellClick} edges={currentEdges} />
           <p className="muted grid-hint">
             파란 칸은 승기천이에요. 두 칸을 옅게 감싸는 색은 시너지가 발동 중이라는 뜻이고, 옅은
-            파란빛은 하천과 맞닿아 있다는 뜻이에요. 한 칸이 여러 색으로 동시에 물들 수도 있어요.
+            파란빛은 하천과 맞닿아 있다는 뜻이에요(효과는 위 "시너지 안내"에 정리돼 있어요). 한
+            칸이 여러 색으로 동시에 물들 수도 있어요.
           </p>
         </div>
 
