@@ -1,0 +1,229 @@
+// 승기천 정비 시뮬레이터 — 6x6 타일 배치 데이터 모델
+// 하천은 고정된 위치에 있고, 학생은 제한된 개수의 타일을 빈 칸에 배치합니다.
+// 지표 수치는 교육용으로 설계한 가상 모델이며 실제 승기천 정비사업의 예측값이 아닙니다.
+
+export type IndicatorKey =
+  | "flood"
+  | "convenience"
+  | "biodiversity"
+  | "water"
+  | "scenery";
+
+export interface Indicator {
+  key: IndicatorKey;
+  label: string;
+  shortLabel: string;
+  description: string;
+}
+
+export const INDICATORS: Indicator[] = [
+  {
+    key: "flood",
+    label: "홍수 안전성",
+    shortLabel: "안전",
+    description: "폭우가 왔을 때 물이 넘치지 않고 잘 빠지는 정도예요.",
+  },
+  {
+    key: "convenience",
+    label: "이용 편의성",
+    shortLabel: "편의",
+    description: "사람들이 살고, 일하고, 이동하기 편한 정도예요.",
+  },
+  {
+    key: "biodiversity",
+    label: "생태 다양성",
+    shortLabel: "생태",
+    description: "물고기, 곤충, 식물이 살아가기 좋은 정도예요.",
+  },
+  {
+    key: "water",
+    label: "수질",
+    shortLabel: "수질",
+    description: "물이 스스로 깨끗해지는 자정 능력이 있는 정도예요.",
+  },
+  {
+    key: "scenery",
+    label: "경관 자연성",
+    shortLabel: "경관",
+    description: "인공적이지 않고 자연 그대로처럼 보이는 정도예요.",
+  },
+];
+
+export type IndicatorValues = Record<IndicatorKey, number>;
+
+export const GRID_SIZE = 6;
+
+export interface Cell {
+  row: number;
+  col: number;
+}
+
+// 승기천이 마을을 가로지르는 고정된 물길이에요. 학생은 이 칸들을 바꿀 수 없어요.
+export const RIVER_PATH: Cell[] = [
+  { row: 0, col: 1 },
+  { row: 1, col: 2 },
+  { row: 2, col: 2 },
+  { row: 3, col: 3 },
+  { row: 4, col: 3 },
+  { row: 5, col: 4 },
+];
+
+export function cellKey(row: number, col: number): string {
+  return `${row},${col}`;
+}
+
+const RIVER_SET = new Set(RIVER_PATH.map((c) => cellKey(c.row, c.col)));
+
+export function isRiver(row: number, col: number): boolean {
+  return RIVER_SET.has(cellKey(row, col));
+}
+
+export function isRiverAdjacent(row: number, col: number): boolean {
+  const neighbors: [number, number][] = [
+    [row - 1, col],
+    [row + 1, col],
+    [row, col - 1],
+    [row, col + 1],
+  ];
+  return neighbors.some(([r, c]) => RIVER_SET.has(cellKey(r, c)));
+}
+
+export type TileTypeKey = "residential" | "building" | "power" | "road" | "park";
+
+export interface TileType {
+  key: TileTypeKey;
+  label: string;
+  icon: string;
+  maxCount: number;
+  description: string;
+  // 타일 하나를 놓았을 때의 지표 변화량
+  effects: Partial<Record<IndicatorKey, number>>;
+  // 하천과 맞닿은 칸에 놓였을 때 추가로 더해지는 변화량
+  riverBonus: Partial<Record<IndicatorKey, number>>;
+}
+
+export const TILE_TYPES: TileType[] = [
+  {
+    key: "residential",
+    label: "주거지",
+    icon: "🏠",
+    maxCount: 2,
+    description: "사람들이 사는 집이에요.",
+    effects: { convenience: 6, biodiversity: -5, water: -3 },
+    riverBonus: { biodiversity: -4, water: -4 },
+  },
+  {
+    key: "building",
+    label: "상업·공공건물",
+    icon: "🏢",
+    maxCount: 2,
+    description: "가게나 관공서 같은 건물이에요.",
+    effects: { convenience: 7, scenery: -6, biodiversity: -4 },
+    riverBonus: { biodiversity: -4, water: -4 },
+  },
+  {
+    key: "power",
+    label: "전기·통신 시설",
+    icon: "⚡",
+    maxCount: 2,
+    description: "전봇대, 변전 시설처럼 생활에 필요한 기반 시설이에요.",
+    effects: { convenience: 4, scenery: -7, biodiversity: -3 },
+    riverBonus: { biodiversity: -4, water: -4 },
+  },
+  {
+    key: "road",
+    label: "도로",
+    icon: "🛣️",
+    maxCount: 2,
+    description: "차와 사람이 다니는 포장된 길이에요.",
+    effects: { convenience: 6, flood: -6, water: -4 },
+    riverBonus: { biodiversity: -4, water: -4 },
+  },
+  {
+    key: "park",
+    label: "텃밭·공원",
+    icon: "🌳",
+    maxCount: 2,
+    description: "나무를 심거나 텃밭을 가꾸는 녹지예요.",
+    effects: { biodiversity: 6, water: 4, scenery: 3, convenience: 3, flood: 3 },
+    riverBonus: { biodiversity: 4, water: 4 },
+  },
+];
+
+export const TOTAL_BUDGET = TILE_TYPES.reduce((sum, t) => sum + t.maxCount, 0);
+
+export const BASE_VALUES: IndicatorValues = {
+  flood: 50,
+  convenience: 20,
+  biodiversity: 80,
+  water: 75,
+  scenery: 70,
+};
+
+// 칸 좌표("row,col") -> 그 칸에 놓인 타일 종류
+export type Placements = Record<string, TileTypeKey>;
+
+export function simulateGrid(placements: Placements): IndicatorValues {
+  const totals: IndicatorValues = { ...BASE_VALUES };
+  for (const [key, typeKey] of Object.entries(placements)) {
+    const type = TILE_TYPES.find((t) => t.key === typeKey);
+    if (!type) continue;
+    for (const [ind, delta] of Object.entries(type.effects) as [IndicatorKey, number][]) {
+      totals[ind] += delta;
+    }
+    const [row, col] = key.split(",").map(Number);
+    if (isRiverAdjacent(row, col)) {
+      for (const [ind, delta] of Object.entries(type.riverBonus) as [IndicatorKey, number][]) {
+        totals[ind] += delta;
+      }
+    }
+  }
+  const clamped = {} as IndicatorValues;
+  for (const k of Object.keys(totals) as IndicatorKey[]) {
+    clamped[k] = Math.max(0, Math.min(100, Math.round(totals[k])));
+  }
+  return clamped;
+}
+
+export function countByType(placements: Placements): Record<TileTypeKey, number> {
+  const counts = {} as Record<TileTypeKey, number>;
+  for (const t of TILE_TYPES) counts[t.key] = 0;
+  for (const typeKey of Object.values(placements)) counts[typeKey]++;
+  return counts;
+}
+
+export type ReasonKey = "human" | "nature" | "balance";
+
+export interface ReasonOption {
+  key: ReasonKey;
+  label: string;
+  description: string;
+}
+
+export const REASON_OPTIONS: ReasonOption[] = [
+  {
+    key: "human",
+    label: "사람의 안전과 편의를 위해",
+    description: "사람이 안전하고 편리하게 이용하는 것이 가장 중요하다고 생각했어요.",
+  },
+  {
+    key: "nature",
+    label: "자연 그대로의 가치를 지키기 위해",
+    description: "하천과 생물이 그 자체로 소중하다고 생각했어요.",
+  },
+  {
+    key: "balance",
+    label: "사람과 자연의 균형을 위해",
+    description: "둘 중 하나만 고르기보다 서로 균형을 맞추려고 했어요.",
+  },
+];
+
+export interface SavedPlan {
+  id: string;
+  label: string;
+  placements: Placements;
+  values: IndicatorValues;
+  reason: ReasonKey;
+  reasonNote: string;
+  savedAt: number;
+}

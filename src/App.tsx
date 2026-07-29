@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { DEFAULT_LEVELS, type ReasonKey, type SavedPlan, simulate } from "./data/items";
+import { cellKey, isRiver, simulateGrid, type Placements, type ReasonKey, type SavedPlan, type TileTypeKey } from "./data/grid";
 import IntroScreen from "./screens/IntroScreen";
 import ExploreScreen from "./screens/ExploreScreen";
 import CompareScreen from "./screens/CompareScreen";
@@ -22,8 +22,8 @@ function makeId() {
 
 function App() {
   const [screen, setScreen] = useState<Screen>("intro");
-  const [levels, setLevels] = useState<number[]>(DEFAULT_LEVELS);
-  const [history, setHistory] = useState<number[][]>([]);
+  const [placements, setPlacements] = useState<Placements>({});
+  const [history, setHistory] = useState<Placements[]>([]);
   const [savedPlans, setSavedPlans] = useState<SavedPlan[]>([]);
   const [reflection, setReflection] = useState("");
   const [finished, setFinished] = useState(false);
@@ -34,24 +34,37 @@ function App() {
   }, [screen]);
 
   function pushHistory() {
-    setHistory((h) => [...h, levels]);
+    setHistory((h) => [...h, placements]);
   }
 
-  function handleChangeItem(index: number, level: number) {
+  function handlePlaceTile(row: number, col: number, type: TileTypeKey) {
+    const key = cellKey(row, col);
+    if (isRiver(row, col) || placements[key]) return;
     pushHistory();
-    setLevels((prev) => prev.map((v, i) => (i === index ? level : v)));
+    setPlacements((prev) => ({ ...prev, [key]: type }));
+  }
+
+  function handleRemoveTile(row: number, col: number) {
+    const key = cellKey(row, col);
+    if (!placements[key]) return;
+    pushHistory();
+    setPlacements((prev) => {
+      const next = { ...prev };
+      delete next[key];
+      return next;
+    });
   }
 
   function handleReset() {
     pushHistory();
-    setLevels(DEFAULT_LEVELS);
+    setPlacements({});
   }
 
   function handleUndo() {
     setHistory((h) => {
       if (h.length === 0) return h;
       const next = h[h.length - 1];
-      setLevels(next);
+      setPlacements(next);
       return h.slice(0, -1);
     });
   }
@@ -60,8 +73,8 @@ function App() {
     const plan: SavedPlan = {
       id: makeId(),
       label: `안 ${savedPlans.length + 1}`,
-      levels: [...levels],
-      values: simulate(levels),
+      placements: { ...placements },
+      values: simulateGrid(placements),
       reason,
       reasonNote: note,
       savedAt: Date.now(),
@@ -73,7 +86,7 @@ function App() {
     const plan = savedPlans.find((p) => p.id === id);
     if (!plan) return;
     pushHistory();
-    setLevels([...plan.levels]);
+    setPlacements({ ...plan.placements });
   }
 
   function handleDeletePlan(id: string) {
@@ -99,8 +112,9 @@ function App() {
         {screen === "intro" && <IntroScreen onStart={() => setScreen("explore")} />}
         {screen === "explore" && (
           <ExploreScreen
-            levels={levels}
-            onChangeItem={handleChangeItem}
+            placements={placements}
+            onPlaceTile={handlePlaceTile}
+            onRemoveTile={handleRemoveTile}
             onReset={handleReset}
             onUndo={handleUndo}
             canUndo={history.length > 0}

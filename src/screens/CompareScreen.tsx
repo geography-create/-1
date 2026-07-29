@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { INDICATORS, ITEMS, REASON_OPTIONS, type SavedPlan } from "../data/items";
+import { INDICATORS, REASON_OPTIONS, TILE_TYPES, countByType, type SavedPlan } from "../data/grid";
 import IndicatorRadar from "../components/IndicatorRadar";
+import TileGrid from "../components/TileGrid";
 
 interface Props {
   savedPlans: SavedPlan[];
@@ -30,7 +31,9 @@ export default function CompareScreen({ savedPlans, onNext, onBack }: Props) {
     );
   }
 
-  const changedItems = ITEMS.map((item, i) => ({ item, from: planA.levels[i], to: planB.levels[i] })).filter(
+  const countsA = countByType(planA.placements);
+  const countsB = countByType(planB.placements);
+  const typeDiffs = TILE_TYPES.map((t) => ({ type: t, from: countsA[t.key], to: countsB[t.key] })).filter(
     (d) => d.from !== d.to,
   );
 
@@ -68,6 +71,11 @@ export default function CompareScreen({ savedPlans, onNext, onBack }: Props) {
         </label>
       </div>
 
+      <div className="compare-grids">
+        <TileGrid placements={planA.placements} compact label={planA.label} />
+        <TileGrid placements={planB.placements} compact label={planB.label} />
+      </div>
+
       <div className="compare-layout">
         <IndicatorRadar
           datasets={[
@@ -96,19 +104,24 @@ export default function CompareScreen({ savedPlans, onNext, onBack }: Props) {
           </div>
 
           <div className="compare-block">
-            <h2>바뀐 항목</h2>
-            {changedItems.length === 0 ? (
-              <p className="muted">두 안의 항목 선택이 동일해요.</p>
+            <h2>바뀐 타일 개수</h2>
+            {typeDiffs.length === 0 ? (
+              <p className="muted">두 안의 타일 구성이 동일해요.</p>
             ) : (
               <ul className="item-diff-list">
-                {changedItems.map(({ item, from, to }) => (
-                  <li key={item.key}>
-                    <strong>{item.title}</strong>
-                    <span>
-                      {item.levels[from].label} → {item.levels[to].label}
-                    </span>
-                  </li>
-                ))}
+                {typeDiffs.map(({ type, from, to }) => {
+                  const delta = to - from;
+                  return (
+                    <li key={type.key}>
+                      <strong>
+                        {type.icon} {type.label}
+                      </strong>
+                      <span>
+                        {from}개 → {to}개 ({delta > 0 ? `+${delta}` : delta})
+                      </span>
+                    </li>
+                  );
+                })}
               </ul>
             )}
           </div>

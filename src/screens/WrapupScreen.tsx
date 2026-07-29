@@ -1,4 +1,4 @@
-import type { ReasonKey, SavedPlan } from "../data/items";
+import type { ReasonKey, SavedPlan } from "../data/grid";
 import SpectrumBar, { type SpectrumMarker } from "../components/SpectrumBar";
 
 interface Props {

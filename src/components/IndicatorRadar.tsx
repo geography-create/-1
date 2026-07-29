@@ -1,4 +1,4 @@
-import { INDICATORS, type IndicatorValues } from "../data/items";
+import { INDICATORS, type IndicatorValues } from "../data/grid";
 
 export interface RadarDataset {
   label: string;
