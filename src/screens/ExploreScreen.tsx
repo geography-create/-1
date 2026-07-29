@@ -257,7 +257,7 @@ export default function ExploreScreen({
             )}
             <ul className="indicator-bars">
               {INDICATORS.map((ind) => (
-                <li key={ind.key}>
+                <li key={ind.key} title={ind.description}>
                   <div className="indicator-bar-label">
                     <span>{ind.label}</span>
                     <span>{values[ind.key]}</span>

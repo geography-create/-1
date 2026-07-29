@@ -7,7 +7,8 @@ export type IndicatorKey =
   | "convenience"
   | "biodiversity"
   | "water"
-  | "scenery";
+  | "scenery"
+  | "acceptance";
 
 export interface Indicator {
   key: IndicatorKey;
@@ -46,6 +47,13 @@ export const INDICATORS: Indicator[] = [
     label: "경관 자연성",
     shortLabel: "경관",
     description: "인공적이지 않고 자연 그대로처럼 보이는 정도예요.",
+  },
+  {
+    key: "acceptance",
+    label: "주민 수용성",
+    shortLabel: "수용성",
+    description:
+      "주민들이 이 계획을 얼마나 받아들일 만하다고 느끼는지예요. 이용 편의성과 생태·수질·경관(자연 지표 평균)의 차이가 클수록 낮아져요 — 한쪽으로 치우친 계획일수록 불만이 커진다는 뜻이에요.",
   },
 ];
 
@@ -181,6 +189,8 @@ export const BASE_VALUES: IndicatorValues = {
   biodiversity: 80,
   water: 75,
   scenery: 70,
+  // 주민 수용성은 타일 효과로 직접 쌓이지 않고, simulateGrid 마지막에 다른 지표로부터 계산돼요.
+  acceptance: 0,
 };
 
 // 칸 좌표("row,col") -> 그 칸에 놓인 타일 종류
@@ -341,9 +351,20 @@ export function simulateGrid(placements: Placements): IndicatorValues {
   }
   const clamped = {} as IndicatorValues;
   for (const k of Object.keys(totals) as IndicatorKey[]) {
+    if (k === "acceptance") continue;
     clamped[k] = Math.max(0, Math.min(100, Math.round(totals[k])));
   }
+  clamped.acceptance = computeAcceptance(clamped);
   return clamped;
+}
+
+// 주민 수용성 = 이용 편의성과 자연 지표(생태·수질·경관 평균)가 가까울수록 높아요.
+// 어느 한쪽으로 크게 치우친 계획은 그만큼 불만을 사서 수용성이 떨어져요.
+function computeAcceptance(values: IndicatorValues): number {
+  const natureAvg = (values.biodiversity + values.water + values.scenery) / 3;
+  const gap = Math.abs(values.convenience - natureAvg);
+  const penalty = Math.max(0, gap - 15) * 1.3;
+  return Math.max(0, Math.min(100, Math.round(100 - penalty)));
 }
 
 export function countByType(placements: Placements): Record<TileTypeKey, number> {
@@ -467,7 +488,7 @@ const BADGE_RULES: BadgeRule[] = [
     icon: "⚖️",
     description: "어느 한쪽에 치우치지 않고 골고루 신경 썼어요.",
     test: (v) => {
-      const nums = Object.values(v);
+      const nums = [v.flood, v.convenience, v.biodiversity, v.water, v.scenery];
       return Math.max(...nums) - Math.min(...nums) <= 30 && v.convenience >= 32;
     },
   },
