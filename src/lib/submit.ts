@@ -8,6 +8,8 @@ export interface SubmissionPayload {
   perspective: string;
   reasonNote: string;
   finalReason: string;
+  actualPerspective: string;
+  actualPosition: number;
   reflection: string;
   badge: string;
   synergySummary: string;

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   activeSynergies,
   computeActualSpectrumPosition,
@@ -32,6 +32,12 @@ const PERSPECTIVE_LABELS: Record<ReasonKey, string> = {
 
 const MARKER_COLORS = ["#c96f34", "#7a6fb0", "#2f6f5e", "#3f7dc4", "#b0546f"];
 
+function actualPerspectiveLabel(position: number): string {
+  if (position < 32) return "인간중심주의";
+  if (position < 68) return "균형·조화";
+  return "생태중심주의";
+}
+
 export default function WrapupScreen({
   savedPlans,
   reflection,
@@ -44,10 +50,18 @@ export default function WrapupScreen({
   const [studentNo, setStudentNo] = useState("");
   const [name, setName] = useState("");
   const [finalReason, setFinalReason] = useState("");
+  const [finalPlanId, setFinalPlanId] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [sentToSheet, setSentToSheet] = useState(false);
 
-  const finalPlan = savedPlans[savedPlans.length - 1];
+  useEffect(() => {
+    if (savedPlans.length === 0) return;
+    if (!finalPlanId || !savedPlans.some((p) => p.id === finalPlanId)) {
+      setFinalPlanId(savedPlans[savedPlans.length - 1].id);
+    }
+  }, [savedPlans, finalPlanId]);
+
+  const finalPlan = savedPlans.find((p) => p.id === finalPlanId) ?? savedPlans[savedPlans.length - 1];
 
   const markers: SpectrumMarker[] = savedPlans.map((plan, i) => {
     const position = Math.max(4, Math.min(96, REASON_POSITION[plan.reason]));
@@ -90,6 +104,8 @@ export default function WrapupScreen({
         ? synergies.map(({ synergy, count }) => `${synergy.label}${count > 1 ? ` ×${count}` : ""}`).join(" · ")
         : "없음";
 
+    const actualPosition = computeActualSpectrumPosition(finalPlan.values);
+
     const ok = await submitToSheet({
       classNo: classNo.trim(),
       studentNo: studentNo.trim(),
@@ -97,6 +113,8 @@ export default function WrapupScreen({
       perspective: PERSPECTIVE_LABELS[finalPlan.reason],
       reasonNote: finalPlan.reasonNote,
       finalReason: finalReason.trim(),
+      actualPerspective: actualPerspectiveLabel(actualPosition),
+      actualPosition,
       reflection: reflection.trim(),
       badge: `${badge.icon} ${badge.label}`,
       synergySummary,
@@ -130,9 +148,9 @@ export default function WrapupScreen({
             <SpectrumBar markers={actualMarkers} />
             {finalPlan && (
               <p className="muted spectrum-note">
-                진하게 표시된 <strong>{finalPlan.label}</strong>이 가장 최근에 저장한 최종 안이에요. 두
-                그래프 위치가 다르다면, 말한 이유와 실제로 지은 것 사이에 차이가 있었다는 뜻이에요 —
-                왜 그런지 이야기해 보세요.
+                진하게 표시된 <strong>{finalPlan.label}</strong>이 아래에서 고를 최종 안이에요. 두 그래프
+                위치가 다르다면, 말한 이유와 실제로 지은 것 사이에 차이가 있었다는 뜻이에요 — 왜 그런지
+                이야기해 보세요.
               </p>
             )}
           </>
@@ -142,9 +160,23 @@ export default function WrapupScreen({
       {savedPlans.length > 0 && (
         <div className="panel">
           <h2>최종 선택 이유</h2>
+          <p className="muted">어떤 안을 최종안으로 제출할지 골라주세요.</p>
+          <div className="reason-chips final-plan-picker">
+            {savedPlans.map((plan) => (
+              <button
+                key={plan.id}
+                type="button"
+                className={`reason-chip${finalPlanId === plan.id ? " selected" : ""}`}
+                onClick={() => setFinalPlanId(plan.id)}
+                disabled={finished}
+              >
+                {plan.label}
+              </button>
+            ))}
+          </div>
           <p className="muted">
-            저장한 여러 안 중에서 <strong>{finalPlan?.label}</strong>을 최종안으로 고른 이유를, 포기한 다른
-            안과 비교해서 설명해 보세요.
+            <strong>{finalPlan?.label}</strong>을 최종안으로 고른 이유를, 포기한 다른 안과 비교해서
+            설명해 보세요.
           </p>
           <textarea
             rows={3}
