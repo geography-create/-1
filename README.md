@@ -26,6 +26,21 @@ npm run build    # 프로덕션 빌드
 npm run lint     # oxlint
 ```
 
+## 배포 (GitHub Pages)
+
+Netlify 대신, 또는 Netlify가 사용량 제한으로 배포를 못 할 때 GitHub Pages로도
+배포할 수 있어요. `.github/workflows/deploy-pages.yml`이 이 브랜치에 푸시할 때마다
+자동으로 빌드·배포합니다. 저장소당 처음 한 번만 아래 두 가지를 설정하면 돼요.
+
+1. GitHub 저장소 **Settings → Pages**에서 **Source**를 **GitHub Actions**로 지정합니다.
+2. 구글 시트 연동을 쓴다면, **Settings → Secrets and variables → Actions**에서
+   **New repository secret**으로 `VITE_SHEET_WEBHOOK_URL`을 추가합니다 (값은 아래
+   "교사용 대시보드 설정"에서 발급받은 `.../exec` URL).
+
+설정 후에는 이 브랜치에 커밋을 푸시할 때마다 **Actions** 탭에서 배포 진행 상황을
+볼 수 있고, 완료되면 `https://<GitHub 계정명>.github.io/<저장소이름>/` 주소로
+접속할 수 있습니다.
+
 ## 교사용 대시보드 설정 (선택)
 
 정리 화면에서 학생이 "작성 완료"를 누르면, 최종 안의 관점(인간중심주의/균형·조화/
