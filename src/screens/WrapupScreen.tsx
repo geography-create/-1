@@ -49,8 +49,7 @@ export default function WrapupScreen({
   const finalPlan = savedPlans[savedPlans.length - 1];
 
   const markers: SpectrumMarker[] = savedPlans.map((plan, i) => {
-    const stagger = (i - (savedPlans.length - 1) / 2) * 3;
-    const position = Math.max(4, Math.min(96, REASON_POSITION[plan.reason] + stagger));
+    const position = Math.max(4, Math.min(96, REASON_POSITION[plan.reason]));
     return {
       id: plan.id,
       position,
@@ -61,11 +60,7 @@ export default function WrapupScreen({
   });
 
   const actualMarkers: SpectrumMarker[] = savedPlans.map((plan, i) => {
-    const stagger = (i - (savedPlans.length - 1) / 2) * 3;
-    const position = Math.max(
-      4,
-      Math.min(96, computeActualSpectrumPosition(plan.values) + stagger),
-    );
+    const position = Math.max(4, Math.min(96, computeActualSpectrumPosition(plan.values)));
     return {
       id: plan.id,
       position,

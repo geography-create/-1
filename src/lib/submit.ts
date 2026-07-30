@@ -31,7 +31,9 @@ export async function submitToSheet(payload: SubmissionPayload): Promise<boolean
       body: JSON.stringify(payload),
     });
     return true;
-  } catch {
+  } catch (err) {
+    // 개발자 도구 콘솔에서 실패 원인을 확인할 수 있도록 남겨둔다(교사에게는 노출되지 않음).
+    console.error("[승기천 시뮬레이터] 구글 시트 전송 실패:", err);
     return false;
   }
 }
