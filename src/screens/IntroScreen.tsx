@@ -1,3 +1,5 @@
+import culvertPhoto from "../assets/images/seunggicheon-culvert.webp";
+import ecoPhoto from "../assets/images/seunggicheon-eco.webp";
 import RiverIllustration from "../components/RiverIllustration";
 
 interface Props {
@@ -15,8 +17,8 @@ export default function IntroScreen({ onStart }: Props) {
       </p>
 
       <div className="river-compare">
-        <RiverIllustration src={`${import.meta.env.BASE_URL}images/seunggicheon-culvert.webp?v=2`} title="① 복개된 하천 구간" />
-        <RiverIllustration src={`${import.meta.env.BASE_URL}images/seunggicheon-eco.webp?v=2`} title="② 생태하천으로 복원된 구간" />
+        <RiverIllustration src={culvertPhoto} title="① 복개된 하천 구간" />
+        <RiverIllustration src={ecoPhoto} title="② 생태하천으로 복원된 구간" />
       </div>
 
       <div className="intro-question">

@@ -21,10 +21,18 @@
 
 ```bash
 npm install
-npm run dev      # 개발 서버
-npm run build    # 프로덕션 빌드
-npm run lint     # oxlint
+npm run dev              # 개발 서버
+npm run build            # 프로덕션 빌드
+npm run build:standalone # 파일 하나로 된 오프라인 버전 (dist-standalone/index.html)
+npm run lint              # oxlint
 ```
+
+`build:standalone`은 배포 없이 파일 하나만으로 열어볼 수 있는 버전이 필요할 때 씁니다
+(교사 동료에게 미리보기로 보내거나, 인터넷이 불안정한 교실에서 로컬로 열 때 등). JS·CSS·
+사진이 모두 `dist-standalone/index.html` 한 파일에 들어가서 더블클릭만으로 브라우저에서
+열립니다. 다만 구글 시트 제출 기능은 여전히 인터넷 연결이 있어야 동작하고, `.env.local`에
+설정된 웹훅 URL이 빌드 시점 그대로 파일에 박히니 배포용으로 계속 쓰기보다는 미리보기·백업
+용도로 쓰는 걸 권장해요.
 
 ## 배포 (GitHub Pages)
 
