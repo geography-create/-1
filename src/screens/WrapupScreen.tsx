@@ -189,12 +189,18 @@ export default function WrapupScreen({
       )}
 
       <div className="concept-grid">
-        <div className="concept-card human">
-          <h3>인간중심주의</h3>
+        <div className={`concept-card human${finalPlan?.reason === "human" ? " active" : ""}`}>
+          <h3>
+            인간중심주의
+            {finalPlan?.reason === "human" && <span className="active-badge">✓ 내 최종 선택</span>}
+          </h3>
           <p>자연을 인간의 삶에 필요한 도구나 자원으로 바라보며, 인간의 이익과 편의를 우선하는 관점이에요.</p>
         </div>
-        <div className="concept-card nature">
-          <h3>생태중심주의</h3>
+        <div className={`concept-card nature${finalPlan?.reason === "nature" ? " active" : ""}`}>
+          <h3>
+            생태중심주의
+            {finalPlan?.reason === "nature" && <span className="active-badge">✓ 내 최종 선택</span>}
+          </h3>
           <p>인간도 자연의 일부이며, 자연은 그 자체로 존중받아야 할 고유한 가치를 지닌다고 보는 관점이에요.</p>
         </div>
       </div>
@@ -202,6 +208,7 @@ export default function WrapupScreen({
       <p className="muted">
         참고로 오늘 다룬 두 관점 외에도, 인간과 자연의 조화를 강조하는 관점처럼 다양한 시각이 있어요. 어떤
         관점이 정답이라기보다, 자신의 선택을 얼마나 타당한 근거로 설명할 수 있는지가 중요해요.
+        {finalPlan?.reason === "balance" && " 방금 고른 최종안은 그 조화의 관점에 가장 가까워요."}
       </p>
 
       <div className="panel">
