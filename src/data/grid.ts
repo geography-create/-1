@@ -103,7 +103,7 @@ export function isRiverAdjacent(row: number, col: number): boolean {
   return riverNeighborsOf(row, col).length > 0;
 }
 
-export type TileTypeKey = "residential" | "building" | "power" | "road" | "park";
+export type TileTypeKey = "residential" | "building" | "power" | "road" | "park" | "factory";
 
 export interface TileType {
   key: TileTypeKey;
@@ -180,6 +180,18 @@ export const TILE_TYPES: TileType[] = [
     // 하천 옆 텃밭·공원은 물가 식생 완충 지대 역할을 해서 생태·수질 모두 좋아져요.
     riverBonus: { biodiversity: 4, water: 4 },
   },
+  {
+    key: "factory",
+    label: "공장",
+    icon: "🏭",
+    cost: 3,
+    maxCount: 4,
+    description: "물건을 만들어 일자리와 지역 경제에 도움을 주는 시설이에요.",
+    examples: "예: 제조 공장, 산업단지 내 작업장",
+    effects: { convenience: 7, biodiversity: -4, water: -3, scenery: -5, comfort: -6 },
+    // 공장 폐수는 하천 오염의 대표적인 원인이라 하천 옆에서는 수질이 특히 크게 떨어져요.
+    riverBonus: { water: -8, biodiversity: -2 },
+  },
 ];
 
 // 타일마다 코스트가 달라요. 이 예산 안에서 자유롭게 조합을 짜야 해요.
@@ -251,6 +263,14 @@ export const SYNERGIES: Synergy[] = [
     hint: "전기·통신 시설 바로 옆 주거지는 경관에 대한 불만이 커져요.",
     color: "#a85a8a",
     effects: { scenery: -3 },
+  },
+  {
+    key: "factory-park",
+    pair: ["factory", "park"],
+    label: "완충 녹지",
+    hint: "공장 옆 텃밭·공원은 오염을 일부 막아주는 완충지대 역할을 해서 생태·수질·쾌적성이 조금 회복돼요.",
+    color: "#5a8a6f",
+    effects: { biodiversity: 3, water: 4, comfort: 3 },
   },
 ];
 

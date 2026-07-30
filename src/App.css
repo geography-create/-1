@@ -568,6 +568,11 @@
   border-color: var(--nature);
 }
 
+.grid-cell.tile-factory.filled {
+  background: #e9dcd6;
+  border-color: #8a5a4a;
+}
+
 .tile-grid-wrap.compact .tile-grid-stack,
 .tile-grid-wrap.compact .tile-grid {
   max-width: 220px;
