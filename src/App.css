@@ -198,6 +198,15 @@
   gap: 4px;
 }
 
+.concept-intro h2 {
+  font-size: 1rem;
+  margin-bottom: 8px;
+}
+
+.concept-intro .muted {
+  margin-bottom: 14px;
+}
+
 .core-rules {
   border: 1.5px solid var(--nature);
   border-radius: 14px;

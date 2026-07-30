@@ -24,6 +24,24 @@ export default function IntroScreen({ onStart }: Props) {
         <p>선생님의 안내에 따라 손을 들어 의견을 나눠 보세요.</p>
       </div>
 
+      <div className="concept-intro">
+        <h2>오늘 비교할 두 관점</h2>
+        <p className="muted">
+          두 사진처럼 하천을 다루는 방식이 갈리는 건, 자연을 바라보는 관점이 다르기 때문이에요. 아래 두
+          관점의 이름과 뜻을 기억해 두면, 잠시 뒤 타일을 배치하고 이유를 고를 때 도움이 될 거예요.
+        </p>
+        <div className="concept-grid">
+          <div className="concept-card human">
+            <h3>인간중심주의</h3>
+            <p>자연을 인간의 삶에 필요한 도구나 자원으로 바라보며, 인간의 이익과 편의를 우선하는 관점이에요.</p>
+          </div>
+          <div className="concept-card nature">
+            <h3>생태중심주의</h3>
+            <p>인간도 자연의 일부이며, 자연은 그 자체로 존중받아야 할 고유한 가치를 지닌다고 보는 관점이에요.</p>
+          </div>
+        </div>
+      </div>
+
       <div className="core-rules">
         <h2>이번 시간 핵심 규칙 3가지</h2>
         <ol>
