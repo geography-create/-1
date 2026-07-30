@@ -15,8 +15,8 @@ export default function IntroScreen({ onStart }: Props) {
       </p>
 
       <div className="river-compare">
-        <RiverIllustration src="/images/seunggicheon-culvert.webp" title="① 복개된 하천 구간" />
-        <RiverIllustration src="/images/seunggicheon-eco.webp" title="② 생태하천으로 복원된 구간" />
+        <RiverIllustration src={`${import.meta.env.BASE_URL}images/seunggicheon-culvert.webp`} title="① 복개된 하천 구간" />
+        <RiverIllustration src={`${import.meta.env.BASE_URL}images/seunggicheon-eco.webp`} title="② 생태하천으로 복원된 구간" />
       </div>
 
       <div className="intro-question">

@@ -358,7 +358,7 @@ export default function ExploreScreen({
                   ))}
                 </div>
                 <textarea
-                  placeholder="(선택) 이유를 조금 더 적어보세요"
+                  placeholder="이유를 한두 문장으로 적어보세요 (예: 산책로를 넓혀서 주민들이 더 편하게 다닐 수 있게 하고 싶었다)"
                   value={note}
                   onChange={(e) => setNote(e.target.value)}
                   rows={2}
@@ -367,10 +367,13 @@ export default function ExploreScreen({
                   <button type="button" className="ghost-btn" onClick={() => setSavePanelOpen(false)}>
                     취소
                   </button>
-                  <button type="button" className="primary-btn" onClick={confirmSave} disabled={!reason}>
+                  <button type="button" className="primary-btn" onClick={confirmSave} disabled={!reason || !note.trim()}>
                     저장 완료
                   </button>
                 </div>
+                {reason && !note.trim() && (
+                  <p className="muted save-panel-hint">이유를 적어야 저장할 수 있어요 — 이 내용이 선생님께 그대로 전달돼요.</p>
+                )}
               </div>
             )}
           </div>
