@@ -43,6 +43,7 @@ export default function WrapupScreen({
   const [classNo, setClassNo] = useState("");
   const [studentNo, setStudentNo] = useState("");
   const [name, setName] = useState("");
+  const [finalReason, setFinalReason] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [sentToSheet, setSentToSheet] = useState(false);
 
@@ -72,6 +73,7 @@ export default function WrapupScreen({
 
   const canFinish =
     Boolean(reflection.trim()) &&
+    Boolean(finalReason.trim()) &&
     Boolean(classNo.trim()) &&
     Boolean(studentNo.trim()) &&
     Boolean(name.trim()) &&
@@ -94,6 +96,7 @@ export default function WrapupScreen({
       name: name.trim(),
       perspective: PERSPECTIVE_LABELS[finalPlan.reason],
       reasonNote: finalPlan.reasonNote,
+      finalReason: finalReason.trim(),
       reflection: reflection.trim(),
       badge: `${badge.icon} ${badge.label}`,
       synergySummary,
@@ -135,6 +138,23 @@ export default function WrapupScreen({
           </>
         )}
       </div>
+
+      {savedPlans.length > 0 && (
+        <div className="panel">
+          <h2>최종 선택 이유</h2>
+          <p className="muted">
+            저장한 여러 안 중에서 <strong>{finalPlan?.label}</strong>을 최종안으로 고른 이유를, 포기한 다른
+            안과 비교해서 설명해 보세요.
+          </p>
+          <textarea
+            rows={3}
+            value={finalReason}
+            onChange={(e) => setFinalReason(e.target.value)}
+            placeholder="예) 안 1보다 텃밭공원을 늘렸다. 편의성은 조금 낮아지지만 생태 다양성이 더 중요하다고 판단했다."
+            disabled={finished}
+          />
+        </div>
+      )}
 
       <div className="concept-grid">
         <div className="concept-card human">
@@ -217,7 +237,9 @@ export default function WrapupScreen({
         )}
       </footer>
       {!finished && !canFinish && (
-        <p className="muted">반·번호·이름을 모두 입력하고 한 줄 성찰을 작성하면 완료할 수 있어요.</p>
+        <p className="muted">
+          반·번호·이름을 모두 입력하고, 최종 선택 이유와 한 줄 성찰을 작성하면 완료할 수 있어요.
+        </p>
       )}
     </section>
   );

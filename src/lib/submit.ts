@@ -7,6 +7,7 @@ export interface SubmissionPayload {
   name: string;
   perspective: string;
   reasonNote: string;
+  finalReason: string;
   reflection: string;
   badge: string;
   synergySummary: string;
