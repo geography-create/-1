@@ -1,5 +1,11 @@
 import { useState } from "react";
-import { activeSynergies, getBadge, type ReasonKey, type SavedPlan } from "../data/grid";
+import {
+  activeSynergies,
+  computeActualSpectrumPosition,
+  getBadge,
+  type ReasonKey,
+  type SavedPlan,
+} from "../data/grid";
 import { isSubmissionConfigured, submitToSheet } from "../lib/submit";
 import SpectrumBar, { type SpectrumMarker } from "../components/SpectrumBar";
 
@@ -45,6 +51,21 @@ export default function WrapupScreen({
   const markers: SpectrumMarker[] = savedPlans.map((plan, i) => {
     const stagger = (i - (savedPlans.length - 1) / 2) * 3;
     const position = Math.max(4, Math.min(96, REASON_POSITION[plan.reason] + stagger));
+    return {
+      id: plan.id,
+      position,
+      label: plan.label,
+      color: MARKER_COLORS[i % MARKER_COLORS.length],
+      emphasized: plan.id === finalPlan?.id,
+    };
+  });
+
+  const actualMarkers: SpectrumMarker[] = savedPlans.map((plan, i) => {
+    const stagger = (i - (savedPlans.length - 1) / 2) * 3;
+    const position = Math.max(
+      4,
+      Math.min(96, computeActualSpectrumPosition(plan.values) + stagger),
+    );
     return {
       id: plan.id,
       position,
@@ -105,10 +126,15 @@ export default function WrapupScreen({
           <p className="muted">저장된 안이 없어요. 탐색 화면으로 돌아가 안을 저장해 보세요.</p>
         ) : (
           <>
+            <p className="spectrum-label">내가 말한 이유</p>
             <SpectrumBar markers={markers} />
+            <p className="spectrum-label spectrum-label-second">실제 배치 결과</p>
+            <SpectrumBar markers={actualMarkers} />
             {finalPlan && (
               <p className="muted spectrum-note">
-                진하게 표시된 <strong>{finalPlan.label}</strong>이 가장 최근에 저장한 최종 안이에요.
+                진하게 표시된 <strong>{finalPlan.label}</strong>이 가장 최근에 저장한 최종 안이에요. 두
+                그래프 위치가 다르다면, 말한 이유와 실제로 지은 것 사이에 차이가 있었다는 뜻이에요 —
+                왜 그런지 이야기해 보세요.
               </p>
             )}
           </>

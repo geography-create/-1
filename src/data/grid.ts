@@ -380,6 +380,20 @@ function computeAcceptance(values: IndicatorValues): number {
   return Math.max(0, Math.min(100, Math.round(100 - penalty)));
 }
 
+// 실제 배치 결과가 인간중심(0)~생태중심(100) 스펙트럼의 어디쯤에 가까운지 계산해요.
+// 학생이 고른 "선택 이유"와 달리, 이용 편의성과 자연 지표(생태·수질·경관 평균)의
+// 차이를 직접 계산해서 위치를 정해요 — 말한 이유가 아니라 실제로 무엇을 지었는지를 봐요.
+// 경계값은 예산 14 안에서 실제로 나올 수 있는 모든 조합을 시뮬레이션해서 정했어요.
+const SPECTRUM_DIFF_MIN = -18;
+const SPECTRUM_DIFF_MAX = 64;
+
+export function computeActualSpectrumPosition(values: IndicatorValues): number {
+  const natureAvg = (values.biodiversity + values.water + values.scenery) / 3;
+  const diff = natureAvg - values.convenience;
+  const ratio = (diff - SPECTRUM_DIFF_MIN) / (SPECTRUM_DIFF_MAX - SPECTRUM_DIFF_MIN);
+  return Math.max(0, Math.min(100, Math.round(ratio * 100)));
+}
+
 export function countByType(placements: Placements): Record<TileTypeKey, number> {
   const counts = {} as Record<TileTypeKey, number>;
   for (const t of TILE_TYPES) counts[t.key] = 0;

@@ -944,6 +944,17 @@
   margin-top: 10px;
 }
 
+.spectrum-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--ink-soft);
+  margin: 0;
+}
+
+.spectrum-label-second {
+  margin-top: 22px;
+}
+
 .spectrum-track {
   position: relative;
   height: 54px;
