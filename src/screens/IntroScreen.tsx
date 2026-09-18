@@ -1,83 +1,149 @@
-import culvertPhoto from "../assets/images/seunggicheon-culvert.webp";
-import ecoPhoto from "../assets/images/seunggicheon-eco.webp";
-import RiverIllustration from "../components/RiverIllustration";
+import { BUDGET, ZONES } from "../data/city.ts";
+import {
+  ACHIEVEMENT_STANDARDS,
+  BIG_IDEA,
+  LEVELS,
+  QUESTIONS,
+  TASK_STATEMENT,
+  TOTAL_POINTS,
+} from "../data/rubric.ts";
 
-interface Props {
-  onStart: () => void;
-}
-
-export default function IntroScreen({ onStart }: Props) {
+export default function IntroScreen({ onStart }: { onStart: () => void }) {
   return (
-    <section className="screen intro-screen">
-      <p className="eyebrow">통합사회1 · Ⅲ. 자연환경과 인간</p>
-      <h1>승기천 정비 시뮬레이터</h1>
-      <p className="lede">
-        같은 하천인데, 사진 속 두 모습은 왜 이렇게 다를까요? 오늘은 여러분이 직접 승기천을 정비하는
-        계획을 세우며, 그 이유를 찾아봅니다.
-      </p>
-
-      <div className="river-compare">
-        <RiverIllustration src={culvertPhoto} title="① 복개된 하천 구간" />
-        <RiverIllustration src={ecoPhoto} title="② 생태하천으로 복원된 구간" />
-      </div>
-
-      <div className="intro-question">
-        <strong>어느 쪽이 더 좋은 하천일까요?</strong>
-        <p>선생님의 안내에 따라 손을 들어 의견을 나눠 보세요.</p>
-      </div>
-
-      <div className="concept-intro">
-        <h2>오늘 비교할 두 관점</h2>
-        <p className="muted">
-          두 사진처럼 하천을 다루는 방식이 갈리는 건, 자연을 바라보는 관점이 다르기 때문이에요. 아래 두
-          관점의 이름과 뜻을 기억해 두면, 잠시 뒤 타일을 배치하고 이유를 고를 때 도움이 될 거예요.
-        </p>
-        <div className="concept-grid">
-          <div className="concept-card human">
-            <h3>인간중심주의</h3>
-            <p>자연을 인간의 삶에 필요한 도구나 자원으로 바라보며, 인간의 이익과 편의를 우선하는 관점이에요.</p>
-          </div>
-          <div className="concept-card nature">
-            <h3>생태중심주의</h3>
-            <p>인간도 자연의 일부이며, 자연은 그 자체로 존중받아야 할 고유한 가치를 지닌다고 보는 관점이에요.</p>
-          </div>
-        </div>
-      </div>
-
-      <div className="core-rules">
-        <h2>이번 시간 핵심 규칙 3가지</h2>
+    <>
+      <section className="card">
+        <h2>이 수행평가에서 할 일</h2>
+        <p>{TASK_STATEMENT}</p>
         <ol>
           <li>
-            <strong>예산 14 안에서 자유롭게.</strong> 타일마다 코스트(1~3)가 달라요. 무엇을 채우고
-            무엇을 비울지 예산 안에서 골라보세요.
+            <b>배치</b> — 한여울시 9칸×9칸 지도 위에, 예산 <b>{BUDGET}</b>(억 원) 안에서
+            도시 시설을 놓습니다. 하천이 지나는 칸에는 놓을 수 없습니다.
           </li>
           <li>
-            <strong>맞닿으면 달라져요.</strong> 타일끼리, 또는 타일이 하천과 맞닿으면 추가 효과(시너지)가
-            생겨요. 화면의 "시너지 안내"에서 확인할 수 있어요.
+            <b>결과 확인</b> — 배치가 생활권마다 어떤 결과를 냈는지, 3년차 집중호우와
+            6년차 폭염을 견뎠는지 확인합니다.
           </li>
           <li>
-            <strong>안을 3개 저장해서 비교.</strong> 서로 다른 안을 만들어 저장하고, 무엇을 얻고 무엇을
-            포기했는지 비교해 보세요.
+            <b>서술</b> — 아래 세 질문에 답합니다. 점수는 이 서술로 매깁니다.
           </li>
         </ol>
-        <p className="muted">
-          그 외 도전 과제·칭호 같은 기능은 여유가 있을 때 살펴보는 선택 요소예요.
+        <ol>
+          {QUESTIONS.map((q) => (
+            <li key={q.key}>{q.prompt}</li>
+          ))}
+        </ol>
+        <div className="notice">
+          배치 자체에는 점수가 없습니다. <b>잘 만든 도시</b>가 아니라 <b>자기 선택을 설명할 수 있는
+          도시</b>를 만드세요. 무엇을 포기했는지 설명할 수 있다면 그 배치가 좋은 배치입니다.
+        </div>
+        <p className="muted small">
+          이 과제는 AI 도구를 쓰지 않고 스스로 작성합니다. 작성 중인 내용은 이 브라우저에만
+          자동 저장되며, 마지막 제출 단계에서만 선생님께 전송됩니다.
         </p>
-      </div>
+      </section>
 
-      <div className="notice-box">
-        <h2>시작하기 전에</h2>
-        <ul>
-          <li>이 시뮬레이터의 지표 수치는 교육용으로 만든 가상 모델이에요. 실제 승기천 정비사업의 예측값이 아니에요.</li>
-          <li>로그인 없이 진행돼요. 배치를 탐색하고 비교하는 동안은 이름을 입력하지 않아요.</li>
-          <li>맨 마지막 정리 단계에서만 반·번호·이름과 한 줄 성찰을 입력하고, 선생님이 결과를 확인해요. 새로고침하면 그 전까지의 기록은 사라져요.</li>
-          <li>정답은 없어요. 어떤 자연관을 선택하든, 왜 그렇게 생각했는지가 중요해요.</li>
-        </ul>
-      </div>
+      <section className="card">
+        <h2>한여울시의 네 생활권</h2>
+        <p className="muted small">
+          생활권마다 출발선이 다릅니다. 이 차이는 여러분이 만든 것이 아니지만, 여기서
+          무엇을 하느냐는 여러분이 정합니다.
+        </p>
+        <div className="scroll-x">
+          <table className="data">
+            <thead>
+              <tr>
+                <th>생활권</th>
+                <th>위치</th>
+                <th>지금 사정</th>
+                <th className="num">사회</th>
+                <th className="num">경제</th>
+                <th className="num">환경</th>
+              </tr>
+            </thead>
+            <tbody>
+              {ZONES.map((z) => (
+                <tr key={z.id}>
+                  <td>
+                    <b>{z.name}</b>
+                  </td>
+                  <td>{z.short}</td>
+                  <td>{z.summary}</td>
+                  <td className="num">{z.base.social}</td>
+                  <td className="num">{z.base.economy}</td>
+                  <td className="num">{z.base.environment}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
 
-      <button type="button" className="primary-btn" onClick={onStart}>
-        내 기기로 시작하기
-      </button>
-    </section>
+      <section className="card">
+        <h2>무엇을 보고 점수를 매기나요</h2>
+        <p className="muted small">
+          채점 기준은 처음부터 공개합니다. 서술 3문항 합계 {TOTAL_POINTS}점입니다.
+        </p>
+        <div className="scroll-x">
+          <table className="data">
+            <thead>
+              <tr>
+                <th>채점 요소</th>
+                <th>채점 기준</th>
+                <th className="num">배점</th>
+              </tr>
+            </thead>
+            <tbody>
+              {QUESTIONS.map((q) =>
+                q.bands.map((band, i) => (
+                  <tr key={`${q.key}-${band.points}`}>
+                    {i === 0 ? (
+                      <th rowSpan={q.bands.length} scope="rowgroup">
+                        {q.element}
+                      </th>
+                    ) : null}
+                    <td>{band.text}</td>
+                    <td className="num">{band.points}점</td>
+                  </tr>
+                )),
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        <details style={{ marginTop: 14 }}>
+          <summary>성취기준과 평가 기준(A~E) 보기</summary>
+          <ul style={{ marginTop: 10 }}>
+            {ACHIEVEMENT_STANDARDS.map((s) => (
+              <li key={s.code}>
+                {s.lead ? "" : "(연계) "}
+                <b>[{s.code}]</b> {s.text}
+              </li>
+            ))}
+          </ul>
+          <p className="muted small">
+            <b>핵심 아이디어</b> {BIG_IDEA}
+          </p>
+          <div className="scroll-x">
+            <table className="data">
+              <tbody>
+                {LEVELS.map((l) => (
+                  <tr key={l.grade}>
+                    <th style={{ width: "2.5em", textAlign: "center" }}>{l.grade}</th>
+                    <td>{l.text}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </details>
+      </section>
+
+      <div className="nav-row">
+        <span />
+        <button type="button" className="btn primary" onClick={onStart}>
+          배치 시작하기
+        </button>
+      </div>
+    </>
   );
 }

@@ -1,49 +1,692 @@
-:root {
-  --nature: #2f6f5e;
-  --nature-dark: #204c40;
-  --nature-light: #eaf3ee;
-  --human: #c96f34;
-  --human-light: #fbeee0;
-  --balance: #7a6fb0;
-  --ink: #1f2a24;
-  --ink-soft: #52605a;
-  --bg: #f7faf8;
-  --card-bg: #ffffff;
-  --border: #dbe6e0;
-  --danger: #b0413e;
+/* 한여울시 도시 설계 수행평가 — 공통 토큰과 레이아웃 */
 
-  font: 16px/1.55 "Segoe UI", system-ui, -apple-system, "Noto Sans KR", sans-serif;
-  color: var(--ink);
-  background: var(--bg);
+:root {
   color-scheme: light;
-  -webkit-font-smoothing: antialiased;
+
+  --surface-0: #f4f4f1;
+  --surface-1: #fcfcfb;
+  --surface-2: #eeeeea;
+  --border: #d9d8d2;
+  --border-strong: #8d8c85;
+
+  --text-primary: #0b0b0b;
+  --text-secondary: #52514e;
+  --text-muted: #6f6e69;
+
+  /* 세 지수의 색. dataviz 기본 팔레트 slot 1·2·3 */
+  --social: #2a78d6;
+  --economy: #eb6834;
+  --environment: #1baf7a;
+
+  --accent: #1c5cab;
+  --accent-ink: #ffffff;
+  --good: #0f7a4d;
+  --warn: #9a6100;
+  --danger: #b3261e;
+
+  --river: #9ec5f4;
+  --river-ink: #104281;
+  --wetland: #cfe9d8;
+
+  /* 생활권 구분색. 세 지수(파랑·주황·청록)와 겹치지 않는 색으로 골랐다. */
+  --zone-garam: #4a3aa7;
+  --zone-saedeul: #eda100;
+  --zone-dolmaru: #e87ba4;
+  --zone-beodeul: #008300;
+  --zone-tint: 15%;
+
+  --radius: 10px;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.07), 0 4px 14px rgba(0, 0, 0, 0.05);
+
+  --font: "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+
+    --surface-0: #121211;
+    --surface-1: #1a1a19;
+    --surface-2: #242423;
+    --border: #3a3a37;
+    --border-strong: #7d7c74;
+
+    --text-primary: #ffffff;
+    --text-secondary: #c3c2b7;
+    --text-muted: #9d9c93;
+
+    --social: #3987e5;
+    --economy: #d95926;
+    --environment: #199e70;
+
+    --accent: #3987e5;
+    --accent-ink: #08131f;
+    --good: #37b07a;
+    --warn: #d19a2b;
+    --danger: #e66767;
+
+    --river: #184f95;
+    --river-ink: #cde2fb;
+    --wetland: #1f4434;
+
+    --zone-garam: #9085e9;
+    --zone-saedeul: #c98500;
+    --zone-dolmaru: #d55181;
+    --zone-beodeul: #008300;
+    --zone-tint: 22%;
+  }
 }
 
 * {
   box-sizing: border-box;
 }
 
+html,
 body {
   margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--surface-0);
+  color: var(--text-primary);
+  font-family: var(--font);
+  font-size: 16px;
+  line-height: 1.65;
+  -webkit-text-size-adjust: 100%;
 }
 
 h1,
 h2,
-h3 {
-  color: var(--ink);
-  margin: 0;
+h3,
+h4 {
+  line-height: 1.35;
+  margin: 0 0 0.5em;
+  letter-spacing: -0.01em;
 }
 
-p {
-  margin: 0;
-}
+h1 { font-size: 1.6rem; }
+h2 { font-size: 1.25rem; }
+h3 { font-size: 1.05rem; }
+
+p { margin: 0 0 0.8em; }
+ul, ol { margin: 0 0 0.8em; padding-left: 1.3em; }
+li { margin-bottom: 0.3em; }
 
 button {
   font: inherit;
+  cursor: pointer;
 }
 
-textarea,
-select {
+/* ------------------------------------------------------------- 레이아웃 */
+
+.app {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 0 16px 96px;
+}
+
+.masthead {
+  padding: 20px 0 12px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 20px;
+}
+
+.masthead .eyebrow {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  letter-spacing: 0.04em;
+  margin: 0 0 4px;
+}
+
+.steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  list-style: none;
+  margin: 14px 0 0;
+  padding: 0;
+}
+
+.steps li {
+  margin: 0;
+}
+
+.steps button {
+  border: 1px solid var(--border);
+  background: var(--surface-1);
+  color: var(--text-secondary);
+  border-radius: 999px;
+  padding: 5px 13px;
+  font-size: 0.85rem;
+}
+
+.steps button[aria-current="step"] {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+  font-weight: 600;
+}
+
+.steps button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.card {
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow);
+}
+
+.card > :last-child { margin-bottom: 0; }
+
+.card h2, .card h3 { margin-top: 0; }
+
+.muted {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.small {
+  font-size: 0.85rem;
+}
+
+.two-col {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 16px;
+}
+
+.design-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .two-col,
+  .design-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.nav-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 20px;
+}
+
+.btn {
+  border-radius: 8px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface-1);
+  color: var(--text-primary);
+  padding: 9px 18px;
+  font-weight: 600;
+}
+
+.btn.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+}
+
+.btn.danger {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.tag {
+  display: inline-block;
+  border-radius: 999px;
+  padding: 1px 9px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  border: 1px solid currentcolor;
+  white-space: nowrap;
+}
+
+.tag.good { color: var(--good); }
+.tag.warn { color: var(--warn); }
+.tag.danger { color: var(--danger); }
+
+table.data {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+table.data th,
+table.data td {
+  border: 1px solid var(--border);
+  padding: 6px 9px;
+  text-align: left;
+  vertical-align: top;
+}
+
+table.data th {
+  background: var(--surface-2);
+  font-weight: 600;
+}
+
+table.data td.num,
+table.data th.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.scroll-x {
+  overflow-x: auto;
+}
+
+/* --------------------------------------------------------------- 보드 */
+
+.board-wrap {
+  --cell: clamp(30px, 8.5vw, 52px);
+}
+
+.board {
+  display: grid;
+  grid-template-columns: auto repeat(9, var(--cell));
+  gap: 0;
+  width: max-content;
+  max-width: 100%;
+}
+
+.board .corner,
+.board .axis {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  min-width: 20px;
+  height: 20px;
+}
+
+.board .axis.row-label {
+  height: var(--cell);
+  width: 20px;
+}
+
+.cell {
+  position: relative;
+  width: var(--cell);
+  height: var(--cell);
+  border: 1px solid var(--border);
+  background: var(--surface-1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(var(--cell) * 0.4);
+  font-weight: 700;
+  color: var(--text-primary);
+  padding: 0;
+}
+
+.cell[data-zone="garam"] {
+  background: color-mix(in srgb, var(--zone-garam) var(--zone-tint), var(--surface-1));
+}
+.cell[data-zone="saedeul"] {
+  background: color-mix(in srgb, var(--zone-saedeul) var(--zone-tint), var(--surface-1));
+}
+.cell[data-zone="dolmaru"] {
+  background: color-mix(in srgb, var(--zone-dolmaru) var(--zone-tint), var(--surface-1));
+}
+.cell[data-zone="beodeul"] {
+  background: color-mix(in srgb, var(--zone-beodeul) var(--zone-tint), var(--surface-1));
+}
+
+.cell[data-terrain="river"] {
+  background: var(--river);
+  color: var(--river-ink);
+  cursor: not-allowed;
+}
+
+/* 논·습지는 색뿐 아니라 빗금으로도 구분해 생활권 색과 헷갈리지 않게 한다. */
+.cell[data-terrain="wetland"]:not([data-filled="yes"]) {
+  background-color: var(--wetland);
+  background-image: repeating-linear-gradient(
+    45deg,
+    transparent 0 4px,
+    color-mix(in srgb, var(--zone-beodeul) 35%, transparent) 4px 6px
+  );
+}
+
+.cell[data-lowland="yes"]::after {
+  content: "";
+  position: absolute;
+  inset: 2px;
+  border: 1px dashed var(--border-strong);
+  border-radius: 3px;
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+.cell[data-filled="yes"] {
+  border-color: var(--border-strong);
+  box-shadow: inset 0 0 0 2px var(--surface-1);
+}
+
+/* 생활권 경계선은 두껍게 그어 어디가 어느 생활권인지 눈으로 구분되게 한다. */
+.cell.edge-t { border-top: 3px solid var(--border-strong); }
+.cell.edge-b { border-bottom: 3px solid var(--border-strong); }
+.cell.edge-l { border-left: 3px solid var(--border-strong); }
+.cell.edge-r { border-right: 3px solid var(--border-strong); }
+
+.cell:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: -3px;
+  z-index: 2;
+}
+
+.cell.selectable:hover {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+  z-index: 1;
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  margin-top: 12px;
+}
+
+.legend span.swatch {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 1px solid var(--border-strong);
+  border-radius: 3px;
+  vertical-align: -2px;
+  margin-right: 5px;
+}
+
+/* ------------------------------------------------------------- 팔레트 */
+
+.budget-bar {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.budget-bar .amount {
+  font-size: 1.5rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.budget-track {
+  height: 8px;
+  border-radius: 4px;
+  background: var(--surface-2);
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+
+.budget-track > div {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 0 4px 4px 0;
+}
+
+.palette {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 8px;
+}
+
+.palette button {
+  text-align: left;
+  border: 1px solid var(--border);
+  background: var(--surface-1);
+  border-radius: 8px;
+  padding: 8px 10px;
+  color: var(--text-primary);
+  display: grid;
+  gap: 2px;
+}
+
+.palette button[aria-pressed="true"] {
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 2px var(--accent);
+}
+
+.palette button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.palette .fac-name {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.palette .fac-glyph {
+  display: inline-block;
+  min-width: 1.6em;
+  text-align: center;
+  border: 1px solid var(--border-strong);
+  border-radius: 4px;
+  margin-right: 5px;
+  font-size: 0.8rem;
+}
+
+.fac-effect {
+  font-size: 0.78rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-secondary);
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.fac-effect b { font-weight: 600; }
+.fac-effect .s { color: var(--social); }
+.fac-effect .e { color: var(--economy); }
+.fac-effect .v { color: var(--environment); }
+
+.notice {
+  border-left: 4px solid var(--accent);
+  background: var(--surface-2);
+  padding: 9px 12px;
+  border-radius: 0 8px 8px 0;
+  font-size: 0.88rem;
+  margin: 10px 0;
+}
+
+.notice.error { border-left-color: var(--danger); }
+.notice.ok { border-left-color: var(--good); }
+
+/* -------------------------------------------------------------- 서술 */
+
+.answer-block textarea {
+  width: 100%;
+  min-height: 190px;
   font: inherit;
-  color: inherit;
+  line-height: 1.7;
+  padding: 11px 13px;
+  border-radius: 8px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface-1);
+  color: var(--text-primary);
+  resize: vertical;
+}
+
+.answer-block textarea:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.count-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 0.84rem;
+  color: var(--text-secondary);
+  margin-top: 5px;
+  font-variant-numeric: tabular-nums;
+}
+
+.checklist {
+  list-style: none;
+  padding: 0;
+  margin: 10px 0 0;
+  font-size: 0.88rem;
+}
+
+.checklist li {
+  margin-bottom: 4px;
+}
+
+.checklist label {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  cursor: pointer;
+}
+
+.field-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.field-row label {
+  display: grid;
+  gap: 4px;
+  font-size: 0.86rem;
+  color: var(--text-secondary);
+}
+
+.field-row input {
+  font: inherit;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface-1);
+  color: var(--text-primary);
+  width: 130px;
+}
+
+/* -------------------------------------------------------------- 차트 */
+
+figure.chart {
+  margin: 0 0 6px;
+}
+
+figure.chart figcaption {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+
+.chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+
+.chart-legend .key {
+  display: inline-block;
+  width: 11px;
+  height: 11px;
+  border-radius: 3px;
+  margin-right: 5px;
+  vertical-align: -1px;
+}
+
+svg.plot {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+svg.plot .grid-line { stroke: var(--border); stroke-width: 1; }
+svg.plot .axis-line { stroke: var(--border-strong); stroke-width: 1; }
+svg.plot text { fill: var(--text-secondary); font-size: 11px; }
+svg.plot text.value { fill: var(--text-primary); font-size: 11px; font-weight: 600; }
+svg.plot text.zone { fill: var(--text-primary); font-size: 12px; font-weight: 600; }
+
+.meter-row {
+  display: grid;
+  gap: 10px;
+}
+
+.meter {
+  display: grid;
+  grid-template-columns: 7.5em minmax(0, 1fr) 3em;
+  gap: 10px;
+  align-items: center;
+  font-size: 0.88rem;
+}
+
+.meter .track {
+  height: 10px;
+  border-radius: 5px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+
+.meter .fill {
+  height: 100%;
+  border-radius: 0 5px 5px 0;
+  background: var(--environment);
+}
+
+.meter .val {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+/* --------------------------------------------------------- 교사용 버튼 */
+
+.teacher-fab {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 20;
+  border-radius: 999px;
+  padding: 10px 17px;
+  background: var(--text-primary);
+  color: var(--surface-1);
+  border: none;
+  font-weight: 600;
+  box-shadow: var(--shadow);
+}
+
+.save-hint {
+  margin: 10px 0 0;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+@media print {
+  .steps, .nav-row, .teacher-fab, .save-hint, .palette, .btn { display: none !important; }
+  .card { break-inside: avoid; box-shadow: none; }
+  body { background: #fff; }
 }

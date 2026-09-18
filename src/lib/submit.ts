@@ -1,18 +1,26 @@
-// 정리 화면 제출을 구글 시트(Apps Script 웹 앱)로 전송하는 도우미.
-// 설정 방법은 README.md의 "교사용 대시보드 설정"을 참고하세요.
+// 최종 제출을 구글 시트(Apps Script 웹 앱)로 보내는 도우미.
+// 설정 방법은 README.md의 "교사용 결과 수합 설정"을 참고하세요.
 
 export interface SubmissionPayload {
   classNo: string;
   studentNo: string;
   name: string;
-  perspective: string;
-  reasonNote: string;
-  finalReason: string;
-  actualPerspective: string;
-  actualPosition: number;
-  reflection: string;
-  badge: string;
-  synergySummary: string;
+  /** 배치한 시설을 "칸(행,열) 시설명" 형태로 이어붙인 문자열. */
+  placementText: string;
+  spent: number;
+  placedCount: number;
+  zoneSummary: string;
+  gap: number;
+  gapLevel: string;
+  worstZone: string;
+  bestZone: string;
+  nonHumanSummary: string;
+  eventSummary: string;
+  q1: string;
+  q2: string;
+  q3: string;
+  /** 학생이 스스로 체크한 자기점검 항목 수 / 전체. */
+  selfCheck: string;
 }
 
 const ENDPOINT = import.meta.env.VITE_SHEET_WEBHOOK_URL as string | undefined;
@@ -21,9 +29,8 @@ export function isSubmissionConfigured(): boolean {
   return Boolean(ENDPOINT);
 }
 
-// Apps Script 웹 앱은 브라우저에서 보낸 요청의 응답을 CORS 때문에 읽을 수 없어서
-// no-cors로 전송한다. 즉 실제 기록 성공 여부는 이 함수의 반환값으로 알 수 없고,
-// 네트워크 요청 자체가 실패했는지만 확인할 수 있다.
+// Apps Script 웹 앱은 CORS 때문에 브라우저에서 응답을 읽을 수 없다. 그래서 no-cors로
+// 보내고, 실제 기록 여부는 선생님이 시트를 열어 확인해야 한다.
 export async function submitToSheet(payload: SubmissionPayload): Promise<boolean> {
   if (!ENDPOINT) return false;
   try {
@@ -35,8 +42,7 @@ export async function submitToSheet(payload: SubmissionPayload): Promise<boolean
     });
     return true;
   } catch (err) {
-    // 개발자 도구 콘솔에서 실패 원인을 확인할 수 있도록 남겨둔다(교사에게는 노출되지 않음).
-    console.error("[승기천 시뮬레이터] 구글 시트 전송 실패:", err);
+    console.error("[한여울시] 구글 시트 전송 실패:", err);
     return false;
   }
 }
