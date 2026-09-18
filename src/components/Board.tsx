@@ -1,6 +1,14 @@
 // 9x9 격자 지도. 하천은 고정이고, 나머지 칸에 시설을 놓는다.
 
-import { GRID, SIZE, ZONES, ZONE_BY_ID, cellAt, type Cell } from "../data/city.ts";
+import {
+  FIXED_PLACEMENT,
+  GRID,
+  SIZE,
+  ZONES,
+  ZONE_BY_ID,
+  cellAt,
+  type Cell,
+} from "../data/city.ts";
 import { FACILITY_BY_ID } from "../data/facilities.ts";
 import type { Placement } from "../lib/engine.ts";
 import { COL_LABELS, ZONE_COLORS, cellName } from "../lib/labels.ts";
@@ -83,9 +91,24 @@ export default function Board({ placement, readOnly, onCellClick, focusZone }: P
         <li>
           <span
             className="swatch"
-            style={{ background: "transparent", borderStyle: "dashed" }}
+            style={{
+              background: "transparent",
+              borderStyle: "dashed",
+              borderColor: "var(--river-ink)",
+            }}
           />
           저지대(집중호우 침수 위험)
+        </li>
+        <li>
+          <span
+            className="swatch"
+            style={{
+              backgroundColor: "var(--surface-1)",
+              backgroundImage:
+                "repeating-linear-gradient(135deg, transparent 0 3px, color-mix(in srgb, var(--text-muted) 30%, transparent) 3px 5px)",
+            }}
+          />
+          기존 시가지(지울 수 없음)
         </li>
         <li>굵은 선 = 생활권 경계</li>
       </ul>
@@ -129,7 +152,8 @@ function BoardCell({
   onCellClick,
   focusZone,
 }: Props & { cell: Cell }) {
-  const facilityId = placement[cell.index];
+  const fixedId = FIXED_PLACEMENT[cell.index];
+  const facilityId = fixedId ?? placement[cell.index];
   const facility = facilityId ? FACILITY_BY_ID[facilityId] : null;
   const isRiver = cell.terrain === "river";
   const zoneName = cell.zone ? ZONE_BY_ID[cell.zone].name : "하천";
@@ -139,7 +163,9 @@ function BoardCell({
     zoneName,
     isRiver ? "하천" : cell.terrain === "wetland" ? "논·습지" : null,
     cell.lowland ? "저지대" : null,
-    facility ? `${facility.name} 배치됨` : "비어 있음",
+    facility
+      ? `${facility.name}${fixedId ? " (기존 시가지, 지울 수 없음)" : " 배치됨"}`
+      : "비어 있음",
   ]
     .filter(Boolean)
     .join(", ");
@@ -154,8 +180,9 @@ function BoardCell({
       data-terrain={cell.terrain}
       data-lowland={cell.lowland ? "yes" : "no"}
       data-filled={facility ? "yes" : "no"}
+      data-fixed={fixedId ? "yes" : "no"}
       style={dim ? { opacity: 0.32 } : undefined}
-      disabled={readOnly || isRiver}
+      disabled={readOnly || isRiver || Boolean(fixedId)}
       aria-label={label}
       title={label}
       onClick={() => onCellClick?.(cell)}

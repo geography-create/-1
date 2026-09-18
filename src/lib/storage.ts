@@ -1,18 +1,25 @@
-// 수행평가 도중 새로고침하거나 브라우저를 닫아도 답안이 날아가지 않도록
-// 브라우저 안(localStorage)에 자동 저장한다. 서버로 나가는 것은 없다.
+// 연습 기록을 브라우저 안에만 저장한다. 서버로 나가는 것은 없고, 개인정보도 받지 않는다.
 
 import type { Placement } from "./engine.ts";
 
-const KEY = "hanyeoul-urban-design-v1";
+const KEY = "hanyeoul-urban-practice-v2";
+
+/** 나란히 놓고 비교하려고 따로 담아 둔 배치안. */
+export interface SavedPlan {
+  id: string;
+  label: string;
+  placement: Placement;
+  savedAt: string;
+}
+
+export const MAX_PLANS = 3;
 
 export interface Draft {
   placement: Placement;
   answers: { q1: string; q2: string; q3: string };
-  /** 서술 문항별 자기점검 체크박스 상태. 키는 "q1-0" 처럼 문항+항목 번호. */
   checks: Record<string, boolean>;
-  student: { classNo: string; studentNo: string; name: string };
+  plans: SavedPlan[];
   step: number;
-  submitted: boolean;
   savedAt: string;
 }
 
@@ -20,9 +27,8 @@ export const EMPTY_DRAFT: Draft = {
   placement: {},
   answers: { q1: "", q2: "", q3: "" },
   checks: {},
-  student: { classNo: "", studentNo: "", name: "" },
+  plans: [],
   step: 0,
-  submitted: false,
   savedAt: "",
 };
 
@@ -37,7 +43,7 @@ export function loadDraft(): Draft {
       placement: parsed.placement ?? {},
       answers: { ...EMPTY_DRAFT.answers, ...parsed.answers },
       checks: parsed.checks ?? {},
-      student: { ...EMPTY_DRAFT.student, ...parsed.student },
+      plans: Array.isArray(parsed.plans) ? parsed.plans.slice(0, MAX_PLANS) : [],
     };
   } catch {
     // 시크릿 모드 등 저장소를 쓸 수 없는 환경에서도 앱은 그대로 동작해야 한다.

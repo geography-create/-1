@@ -1,10 +1,11 @@
 import Board from "../components/Board.tsx";
-import { cellName } from "../lib/labels.ts";
 import { Timeline, ZoneBars } from "../components/Charts.tsx";
 import Meters from "../components/Meters.tsx";
-import { GRID } from "../data/city.ts";
+import ZoneMath from "../components/ZoneMath.tsx";
+import { FIXED_PLACEMENT, GAP_DANGER, GAP_WARN, GRID } from "../data/city.ts";
 import { FACILITY_BY_ID } from "../data/facilities.ts";
-import type { CityResult, Placement, ZoneResult } from "../lib/engine.ts";
+import type { CityResult, Placement } from "../lib/engine.ts";
+import { cellName } from "../lib/labels.ts";
 
 interface Props {
   placement: Placement;
@@ -22,14 +23,14 @@ export default function ResultScreen({ placement, result, onBack, onNext }: Prop
       <section className="card">
         <h2>생활권 간 격차</h2>
         <p>
-          종합 생활 편익 지수가 가장 높은 곳은 <b>{result.bestZone.zone.name}</b>(
+          종합 생활 편익이 가장 높은 곳은 <b>{result.bestZone.zone.name}</b>(
           {result.bestZone.benefit}), 가장 낮은 곳은 <b>{result.worstZone.zone.name}</b>(
-          {result.worstZone.benefit})입니다. 차이는 <b>{result.gap}</b>이고,{" "}
+          {result.worstZone.benefit})입니다. 차이는 <b>{result.gap}</b>,{" "}
           <span className={`tag ${gapTag}`}>{result.gapLevel} 수준</span>입니다.
         </p>
         <p className="muted small">
-          차이 3 미만은 안정, 3 이상 5 미만은 경계, 5 이상은 위험으로 봅니다. 종합 생활 편익
-          지수는 사회 지수 0.4 + 경제 지수 0.3 + 환경 지수 0.3으로 계산합니다.
+          종합 생활 편익 = 사회 + 경제 + 환경. 차이 {GAP_WARN} 미만은 안정, {GAP_WARN} 이상은
+          경계, {GAP_DANGER} 이상은 위험으로 봅니다.
         </p>
         <div className="scroll-x">
           <table className="data">
@@ -39,9 +40,9 @@ export default function ResultScreen({ placement, result, onBack, onNext }: Prop
                 <th className="num">사회</th>
                 <th className="num">경제</th>
                 <th className="num">환경</th>
-                <th className="num">종합 생활 편익</th>
-                <th>3년차 집중호우</th>
-                <th>6년차 폭염</th>
+                <th className="num">종합</th>
+                <th>집중호우</th>
+                <th>폭염</th>
               </tr>
             </thead>
             <tbody>
@@ -63,18 +64,14 @@ export default function ResultScreen({ placement, result, onBack, onNext }: Prop
                     <b>{z.benefit}</b>
                   </td>
                   <td>
-                    {z.storm.hit ? (
-                      <span className="tag danger">침수</span>
-                    ) : (
-                      <span className="tag good">견딤</span>
-                    )}
+                    <span className={`tag ${z.storm.hit ? "danger" : "good"}`}>
+                      {z.storm.hit ? "침수" : "견딤"}
+                    </span>
                   </td>
                   <td>
-                    {z.heat.hit ? (
-                      <span className="tag danger">피해</span>
-                    ) : (
-                      <span className="tag good">견딤</span>
-                    )}
+                    <span className={`tag ${z.heat.hit ? "danger" : "good"}`}>
+                      {z.heat.hit ? "피해" : "견딤"}
+                    </span>
                   </td>
                 </tr>
               ))}
@@ -102,17 +99,17 @@ export default function ResultScreen({ placement, result, onBack, onNext }: Prop
             value: n.value,
             caption: n.caption,
           }))}
-          hint="세 지표 모두 100점 만점입니다. 서술 ①번에서 이 결과를 근거로 쓸 수 있습니다."
+          hint="종이 답안에서는 점수 대신 '하천변에 무엇을 놓았는지', '녹지가 이어졌는지 끊겼는지'를 눈으로 보고 쓰면 됩니다."
         />
       </section>
 
       <section className="card">
-        <h2>생활권마다 무슨 일이 있었나</h2>
+        <h2>계산 과정 다시 보기</h2>
         <p className="muted small">
-          숫자가 어디서 왔는지 그대로 펼쳐 놓았습니다. 서술 ②번은 여기서 근거를 찾으면 됩니다.
+          시험지에서는 이 표를 직접 채웁니다. 어떤 줄에서 숫자가 갈렸는지 확인하세요.
         </p>
         {result.zones.map((z) => (
-          <ZoneDetail key={z.zone.id} zone={z} />
+          <ZoneMath key={z.zone.id} zone={z} />
         ))}
       </section>
 
@@ -122,7 +119,7 @@ export default function ResultScreen({ placement, result, onBack, onNext }: Prop
           <Board placement={placement} readOnly />
         </section>
         <section className="card">
-          <h2>배치한 시설 목록</h2>
+          <h2>내가 놓은 시설</h2>
           <div className="scroll-x">
             <table className="data">
               <thead>
@@ -134,7 +131,7 @@ export default function ResultScreen({ placement, result, onBack, onNext }: Prop
                 </tr>
               </thead>
               <tbody>
-                {GRID.filter((c) => placement[c.index]).map((c) => {
+                {GRID.filter((c) => placement[c.index] && !FIXED_PLACEMENT[c.index]).map((c) => {
                   const f = FACILITY_BY_ID[placement[c.index]];
                   return (
                     <tr key={c.index}>
@@ -160,89 +157,9 @@ export default function ResultScreen({ placement, result, onBack, onNext }: Prop
           배치 고치러 가기
         </button>
         <button type="button" className="btn primary" onClick={onNext}>
-          서술 쓰러 가기
+          저장한 안 비교하기
         </button>
       </div>
     </>
-  );
-}
-
-function ZoneDetail({ zone: z }: { zone: ZoneResult }) {
-  return (
-    <details style={{ marginBottom: 8 }}>
-      <summary>
-        <b>{z.zone.name}</b> — 종합 생활 편익 {z.benefit} · 시설 {z.facilityCount}개 ·{" "}
-        {z.cellCount}칸(저지대 {z.lowlandCount}칸)
-      </summary>
-      <p className="muted small" style={{ marginTop: 8 }}>
-        {z.zone.summary}
-      </p>
-      <div className="scroll-x">
-        <table className="data">
-          <thead>
-            <tr>
-              <th>단계</th>
-              <th className="num">사회</th>
-              <th className="num">경제</th>
-              <th className="num">환경</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>출발선(초기 조건)</td>
-              <td className="num">{z.base.social}</td>
-              <td className="num">{z.base.economy}</td>
-              <td className="num">{z.base.environment}</td>
-            </tr>
-            <tr>
-              <td>놓은 시설의 효과</td>
-              <td className="num">{z.fromFacilities.social}</td>
-              <td className="num">{z.fromFacilities.economy}</td>
-              <td className="num">{z.fromFacilities.environment}</td>
-            </tr>
-            {z.adjustments.map((a) => (
-              <tr key={a.label}>
-                <td>{a.label}</td>
-                <td className="num">{a.delta.social || ""}</td>
-                <td className="num">{a.delta.economy || ""}</td>
-                <td className="num">{a.delta.environment || ""}</td>
-              </tr>
-            ))}
-            <tr>
-              <th>배치 직후(0년차)</th>
-              <th className="num">{z.afterBuild.social}</th>
-              <th className="num">{z.afterBuild.economy}</th>
-              <th className="num">{z.afterBuild.environment}</th>
-            </tr>
-            <tr>
-              <td>
-                3년차 집중호우 {z.storm.hit ? "(침수)" : "(견딤)"}
-                <br />
-                <span className="muted small">{z.storm.requirement}</span>
-              </td>
-              <td className="num">{z.storm.delta.social || ""}</td>
-              <td className="num">{z.storm.delta.economy || ""}</td>
-              <td className="num">{z.storm.delta.environment || ""}</td>
-            </tr>
-            <tr>
-              <td>
-                6년차 폭염 {z.heat.hit ? "(피해)" : "(견딤)"}
-                <br />
-                <span className="muted small">{z.heat.requirement}</span>
-              </td>
-              <td className="num">{z.heat.delta.social || ""}</td>
-              <td className="num">{z.heat.delta.economy || ""}</td>
-              <td className="num">{z.heat.delta.environment || ""}</td>
-            </tr>
-            <tr>
-              <th>최종(6년차)</th>
-              <th className="num">{z.final.social}</th>
-              <th className="num">{z.final.economy}</th>
-              <th className="num">{z.final.environment}</th>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </details>
   );
 }

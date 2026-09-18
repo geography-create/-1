@@ -1,14 +1,9 @@
 import { useMemo, useState } from "react";
 import Board from "../components/Board.tsx";
-import { cellName, josa } from "../lib/labels.ts";
 import Meters from "../components/Meters.tsx";
-import { BUDGET, type Cell } from "../data/city.ts";
-import {
-  FACILITIES,
-  FACILITY_BY_ID,
-  type Facility,
-  type FacilityId,
-} from "../data/facilities.ts";
+import ZoneMath from "../components/ZoneMath.tsx";
+import { BUDGET, FIXED_PLACEMENT, GAP_DANGER, GAP_WARN, type Cell } from "../data/city.ts";
+import { FACILITY_BY_ID, PLACEABLE, type Facility, type FacilityId } from "../data/facilities.ts";
 import {
   evaluate,
   placementError,
@@ -16,17 +11,30 @@ import {
   totalSpent,
   type Placement,
 } from "../lib/engine.ts";
-
-const MIN_SPEND = 60;
+import { cellName, josa } from "../lib/labels.ts";
+import { MAX_PLANS, type SavedPlan } from "../lib/storage.ts";
 
 interface Props {
   placement: Placement;
   setPlacement: (next: Placement) => void;
+  plans: SavedPlan[];
+  onSavePlan: () => void;
+  onLoadPlan: (plan: SavedPlan) => void;
+  onRemovePlan: (id: string) => void;
   onBack: () => void;
   onNext: () => void;
 }
 
-export default function DesignScreen({ placement, setPlacement, onBack, onNext }: Props) {
+export default function DesignScreen({
+  placement,
+  setPlacement,
+  plans,
+  onSavePlan,
+  onLoadPlan,
+  onRemovePlan,
+  onBack,
+  onNext,
+}: Props) {
   const [selected, setSelected] = useState<FacilityId | null>(null);
   const [message, setMessage] = useState<{ kind: "error" | "ok"; text: string } | null>(null);
 
@@ -35,6 +43,8 @@ export default function DesignScreen({ placement, setPlacement, onBack, onNext }
   const result = useMemo(() => evaluate(placement), [placement]);
 
   function handleCell(cell: Cell) {
+    if (FIXED_PLACEMENT[cell.index]) return;
+
     if (placement[cell.index]) {
       const err = removalError(placement, cell);
       if (err) {
@@ -47,7 +57,7 @@ export default function DesignScreen({ placement, setPlacement, onBack, onNext }
       setPlacement(next);
       setMessage({
         kind: "ok",
-        text: `${cellName(cell)} 칸의 ${removed.name}${josa(removed.name, "을", "를")} 치웠습니다.`,
+        text: `${cellName(cell)} 칸의 ${removed.name}${josa(removed.name, "을", "를")} 치웠습니다. (+${removed.cost})`,
       });
       return;
     }
@@ -60,7 +70,7 @@ export default function DesignScreen({ placement, setPlacement, onBack, onNext }
     if (facility.cost > remaining) {
       setMessage({
         kind: "error",
-        text: `예산이 ${remaining} 남았습니다. ${facility.name}은(는) ${facility.cost}이 듭니다.`,
+        text: `예산이 ${remaining} 남았습니다. ${facility.name}${josa(facility.name, "은", "는")} ${facility.cost}이 듭니다.`,
       });
       return;
     }
@@ -76,49 +86,59 @@ export default function DesignScreen({ placement, setPlacement, onBack, onNext }
     });
   }
 
-  const emptyZones = result.zones.filter((z) => z.facilityCount === 0);
-  const stormRisk = result.zones.filter((z) => z.storm.hit);
-  const heatRisk = result.zones.filter((z) => z.heat.hit);
-  const canProceed = spent >= MIN_SPEND && spent <= BUDGET;
+  const canProceed = result.placedCount > 0;
+  const emptySlots = Math.max(0, MAX_PLANS - plans.length);
 
   return (
     <>
       <div className="design-layout">
-        <section className="card">
-          <h2>한여울시 격자 지도</h2>
-          <p className="muted small">
-            오른쪽에서 시설을 고른 뒤 빈 칸을 누르면 놓입니다. 이미 놓은 칸을 다시 누르면
-            치워집니다.
-          </p>
-          <Board placement={placement} onCellClick={handleCell} />
-          {message ? (
-            <p className={`notice ${message.kind === "error" ? "error" : "ok"}`} role="status">
-              {message.text}
+        <div>
+          <section className="card">
+            <h2>한여울시 격자 지도</h2>
+            <p className="muted small">
+              오른쪽에서 시설을 고른 뒤 빈 칸을 누르면 놓입니다. 내가 놓은 칸을 다시 누르면
+              치워지고 예산이 돌아옵니다. 빗금 친 칸은 이미 있던 건물이라 지울 수 없습니다.
             </p>
-          ) : null}
-        </section>
+            <Board placement={placement} onCellClick={handleCell} />
+            {message ? (
+              <p className={`notice ${message.kind === "error" ? "error" : "ok"}`} role="status">
+                {message.text}
+              </p>
+            ) : null}
+          </section>
+
+          <section className="card">
+            <h2>계산 과정</h2>
+            <p className="muted small">
+              시험지에서는 이 표를 직접 손으로 채우게 됩니다. 지금 어떤 줄에서 어떤 숫자가
+              붙는지 눈에 익혀 두세요. 종합은 사회·경제·환경을 그냥 더한 값입니다.
+            </p>
+            {result.zones.map((z) => (
+              <ZoneMath key={z.zone.id} zone={z} />
+            ))}
+          </section>
+        </div>
 
         <div>
           <section className="card">
             <div className="budget-bar">
               <span className="amount">{remaining}</span>
               <span className="muted">
-                / {BUDGET} 남음 · 시설 {result.placedCount}개
+                / {BUDGET} 남음 · 내가 놓은 것 {result.placedCount}개
               </span>
             </div>
             <div className="budget-track">
               <div style={{ width: `${Math.min(100, (spent / BUDGET) * 100)}%` }} />
             </div>
-            <p className="muted small" style={{ marginTop: 8 }}>
-              최소 {MIN_SPEND} 이상 써야 다음 단계로 넘어갈 수 있습니다.
-            </p>
             {selected ? (
               <SelectedNote facility={FACILITY_BY_ID[selected]} />
             ) : (
-              <p className="muted small">아래에서 시설을 고르세요.</p>
+              <p className="muted small" style={{ marginTop: 10 }}>
+                아래에서 시설을 고르세요.
+              </p>
             )}
             <div className="palette">
-              {FACILITIES.map((f) => (
+              {PLACEABLE.map((f) => (
                 <button
                   key={f.id}
                   type="button"
@@ -135,7 +155,7 @@ export default function DesignScreen({ placement, setPlacement, onBack, onNext }
                     {f.name}
                   </span>
                   <span className="fac-effect">
-                    <span>{f.cost}억</span>
+                    <span>{f.cost}</span>
                     <span className="s">사 {fmt(f.effect.social)}</span>
                     <span className="e">경 {fmt(f.effect.economy)}</span>
                     <span className="v">환 {fmt(f.effect.environment)}</span>
@@ -146,36 +166,70 @@ export default function DesignScreen({ placement, setPlacement, onBack, onNext }
           </section>
 
           <section className="card">
-            <h3>지금 생활권별 지수</h3>
-            <p className="muted small">재난은 아직 반영하지 않은, 배치 직후 값입니다.</p>
-            <div className="scroll-x">
-              <table className="data">
-                <thead>
-                  <tr>
-                    <th>생활권</th>
-                    <th className="num">시설</th>
-                    <th className="num">사회</th>
-                    <th className="num">경제</th>
-                    <th className="num">환경</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {result.zones.map((z) => (
-                    <tr key={z.zone.id}>
-                      <td>{z.zone.name}</td>
-                      <td className="num">{z.facilityCount}</td>
-                      <td className="num">{z.afterBuild.social}</td>
-                      <td className="num">{z.afterBuild.economy}</td>
-                      <td className="num">{z.afterBuild.environment}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <h3>지금 생활권 격차</h3>
+            <p>
+              가장 높은 <b>{result.bestZone.zone.name}</b> {result.bestZone.benefit} · 가장 낮은{" "}
+              <b>{result.worstZone.zone.name}</b> {result.worstZone.benefit} · 차이{" "}
+              <b>{result.gap}</b>{" "}
+              <span
+                className={`tag ${
+                  result.gapLevel === "위험" ? "danger" : result.gapLevel === "경계" ? "warn" : "good"
+                }`}
+              >
+                {result.gapLevel}
+              </span>
+            </p>
+            <p className="muted small" style={{ marginBottom: 0 }}>
+              차이 {GAP_WARN} 미만 안정 · {GAP_WARN} 이상 경계 · {GAP_DANGER} 이상 위험
+            </p>
+          </section>
+
+          <section className="card">
+            <h3>안 저장해 두기</h3>
+            <p className="muted small">
+              지금 배치를 담아 두면 나중에 다른 안과 나란히 놓고 비교할 수 있습니다. 최대{" "}
+              {MAX_PLANS}개.
+            </p>
+            <button
+              type="button"
+              className="btn"
+              disabled={emptySlots === 0 || result.placedCount === 0}
+              onClick={onSavePlan}
+            >
+              지금 배치를 {plans.length + 1}번 안으로 저장
+            </button>
+            <div className="plan-slots">
+              {plans.map((plan) => (
+                <div className="plan-slot" key={plan.id}>
+                  <b>{plan.label}</b>
+                  <div className="muted small">
+                    시설 {Object.keys(plan.placement).length}개 · 격차{" "}
+                    {evaluate(plan.placement).gap}
+                  </div>
+                  <div className="row">
+                    <button type="button" onClick={() => onLoadPlan(plan)}>
+                      불러오기
+                    </button>
+                    <button type="button" className="remove" onClick={() => onRemovePlan(plan.id)}>
+                      지우기
+                    </button>
+                  </div>
+                </div>
+              ))}
+              {Array.from({ length: emptySlots }, (_, i) => (
+                <div className="plan-slot empty" key={`empty-${i}`}>
+                  빈 자리
+                </div>
+              ))}
             </div>
           </section>
 
           <section className="card">
             <h3>비인간 이웃</h3>
+            <p className="muted small">
+              이 셋은 손으로 세기 번거로워 앱에서만 점수로 보여 줍니다. 종이에서는 하천변에
+              무엇을 놓았는지, 녹지가 이어졌는지 끊겼는지를 눈으로 보고 쓰면 됩니다.
+            </p>
             <Meters
               items={result.nonHuman.map((n) => ({
                 name: n.name,
@@ -183,40 +237,6 @@ export default function DesignScreen({ placement, setPlacement, onBack, onNext }
                 caption: n.caption,
               }))}
             />
-          </section>
-
-          <section className="card">
-            <h3>지금 이대로라면</h3>
-            <ul className="small">
-              {stormRisk.length > 0 ? (
-                <li>
-                  <span className="tag danger">3년차 집중호우</span>{" "}
-                  {stormRisk.map((z) => z.zone.name).join(", ")}
-                  {josa(stormRisk[stormRisk.length - 1].zone.name, "이", "가")} 견디지 못합니다.
-                </li>
-              ) : (
-                <li>
-                  <span className="tag good">3년차 집중호우</span> 네 생활권 모두 견딥니다.
-                </li>
-              )}
-              {heatRisk.length > 0 ? (
-                <li>
-                  <span className="tag danger">6년차 폭염</span>{" "}
-                  {heatRisk.map((z) => z.zone.name).join(", ")}의 녹지가 모자랍니다.
-                </li>
-              ) : (
-                <li>
-                  <span className="tag good">6년차 폭염</span> 네 생활권 모두 녹지가 충분합니다.
-                </li>
-              )}
-              {emptyZones.length > 0 ? (
-                <li>
-                  <span className="tag warn">빈 생활권</span>{" "}
-                  {emptyZones.map((z) => z.zone.name).join(", ")}에 아무것도 놓지 않았습니다.
-                  일부러 그랬다면 그 이유를 서술에 쓰면 됩니다.
-                </li>
-              ) : null}
-            </ul>
           </section>
         </div>
       </div>
@@ -226,7 +246,7 @@ export default function DesignScreen({ placement, setPlacement, onBack, onNext }
           과제 안내로
         </button>
         <span className="muted small">
-          {canProceed ? "" : `${Math.max(0, MIN_SPEND - spent)}만큼 더 써야 합니다.`}
+          {canProceed ? "" : "시설을 하나 이상 놓아야 넘어갈 수 있습니다."}
         </span>
         <button type="button" className="btn primary" disabled={!canProceed} onClick={onNext}>
           결과 확인하기
@@ -239,7 +259,7 @@ export default function DesignScreen({ placement, setPlacement, onBack, onNext }
 function SelectedNote({ facility }: { facility: Facility }) {
   return (
     <div className="notice">
-      <b>{facility.name}</b> ({facility.cost}억) — {facility.note}
+      <b>{facility.name}</b> (비용 {facility.cost}) — {facility.note}
     </div>
   );
 }

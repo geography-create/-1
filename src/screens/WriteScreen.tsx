@@ -1,3 +1,6 @@
+// 서술 연습 화면. 실제 평가는 종이에 쓰므로 여기서 쓴 글은 어디로도 전송되지 않는다.
+// 브라우저 안에만 남고, 필요하면 인쇄해서 들고 갈 수 있다.
+
 import { QUESTIONS, type Question } from "../data/rubric.ts";
 import type { CityResult } from "../lib/engine.ts";
 
@@ -8,7 +11,6 @@ interface Props {
   setCheck: (key: string, value: boolean) => void;
   result: CityResult;
   onBack: () => void;
-  onNext: () => void;
 }
 
 export default function WriteScreen({
@@ -18,24 +20,56 @@ export default function WriteScreen({
   setCheck,
   result,
   onBack,
-  onNext,
 }: Props) {
-  const ready = QUESTIONS.every((q) => answers[q.key].trim().length >= q.minChars);
-
   return (
     <>
       <section className="card">
-        <h2>서술 작성</h2>
-        <p className="muted small">
-          세 문항 모두 각 {QUESTIONS[0].minChars}자 이상 써야 제출 화면으로 넘어갑니다. 글자 수는
-          기준일 뿐이고, 점수는 아래 채점 기준으로 매깁니다. 쓰는 동안 자동 저장됩니다.
+        <h2>서술 연습</h2>
+        <p className="notice">
+          실제 수행평가는 <b>종이에 직접 씁니다.</b> 여기서 쓴 글은 어디로도 전송되지 않고 이
+          브라우저에만 남습니다. 미리 한 번 써 보면서 무엇을 담아야 하는지 감을 잡는 용도예요.
         </p>
-        <div className="notice">
-          <b>내 결과 한눈에</b> — 혜택이 가장 적게 돌아간 생활권은{" "}
-          <b>{result.worstZone.zone.name}</b>(종합 {result.worstZone.benefit}), 가장 많이 돌아간 곳은{" "}
-          <b>{result.bestZone.zone.name}</b>(종합 {result.bestZone.benefit}), 격차{" "}
-          {result.gap}({result.gapLevel} 수준). 비인간 지표는{" "}
-          {result.nonHuman.map((n) => `${n.name} ${n.value}`).join(" · ")}.
+        <div className="scroll-x">
+          <table className="data">
+            <tbody>
+              <tr>
+                <th>혜택 최하 생활권</th>
+                <td>
+                  {result.worstZone.zone.name} (종합 {result.worstZone.benefit})
+                </td>
+                <th>혜택 최상</th>
+                <td>
+                  {result.bestZone.zone.name} (종합 {result.bestZone.benefit})
+                </td>
+              </tr>
+              <tr>
+                <th>생활권 격차</th>
+                <td>
+                  {result.gap} ({result.gapLevel} 수준)
+                </td>
+                <th>비인간 지표</th>
+                <td>{result.nonHuman.map((n) => `${n.name} ${n.value}`).join(" · ")}</td>
+              </tr>
+              <tr>
+                <th>집중호우</th>
+                <td>
+                  침수{" "}
+                  {result.zones
+                    .filter((z) => z.storm.hit)
+                    .map((z) => z.zone.name)
+                    .join(", ") || "없음"}
+                </td>
+                <th>폭염</th>
+                <td>
+                  피해{" "}
+                  {result.zones
+                    .filter((z) => z.heat.hit)
+                    .map((z) => z.zone.name)
+                    .join(", ") || "없음"}
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </section>
 
@@ -53,13 +87,11 @@ export default function WriteScreen({
 
       <div className="nav-row">
         <button type="button" className="btn" onClick={onBack}>
-          결과 다시 보기
+          비교 화면으로
         </button>
-        <span className="muted small">
-          {ready ? "" : "아직 분량을 채우지 못한 문항이 있습니다."}
-        </span>
-        <button type="button" className="btn primary" disabled={!ready} onClick={onNext}>
-          제출 화면으로
+        <span />
+        <button type="button" className="btn primary" onClick={() => window.print()}>
+          인쇄 / PDF로 저장
         </button>
       </div>
     </>
@@ -82,7 +114,6 @@ function AnswerBlock({
   setCheck: (key: string, value: boolean) => void;
 }) {
   const len = value.trim().length;
-  const enough = len >= question.minChars;
   const inputId = `answer-${question.key}`;
 
   return (
@@ -93,22 +124,20 @@ function AnswerBlock({
       <p className="muted small">채점 요소 {question.element}</p>
 
       <label htmlFor={inputId} className="muted small">
-        답안
+        답안 (연습)
       </label>
       <textarea
         id={inputId}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        placeholder="자기 배치와 화면에 나온 숫자를 근거로 삼아 쓰세요."
+        placeholder="자기 배치와 계산 과정에 나온 숫자를 근거로 삼아 쓰세요."
       />
       <div className="count-row">
-        <span>
-          {len}자 {enough ? "" : `(${question.minChars}자 이상 필요)`}
-        </span>
-        <span>{enough ? "분량 충족" : ""}</span>
+        <span>{len}자</span>
+        <span>{len >= question.minChars ? "시험지 한 칸 분량쯤 됩니다" : ""}</span>
       </div>
 
-      <details style={{ marginTop: 10 }}>
+      <details style={{ marginTop: 10 }} open>
         <summary>이 문항의 채점 기준</summary>
         <div className="scroll-x">
           <table className="data" style={{ marginTop: 8 }}>

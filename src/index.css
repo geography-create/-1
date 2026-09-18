@@ -286,6 +286,11 @@ table.data td.num,
 table.data th.num {
   text-align: right;
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+table.data th.num {
+  min-width: 3.2em;
 }
 
 .scroll-x {
@@ -366,14 +371,15 @@ table.data th.num {
   );
 }
 
+/* 저지대는 침수 판정에 직접 쓰이는 정보라 한눈에 보여야 한다. */
 .cell[data-lowland="yes"]::after {
   content: "";
   position: absolute;
   inset: 2px;
-  border: 1px dashed var(--border-strong);
+  border: 1.5px dashed var(--river-ink);
   border-radius: 3px;
   pointer-events: none;
-  opacity: 0.5;
+  opacity: 0.65;
 }
 
 .cell[data-filled="yes"] {
@@ -689,4 +695,105 @@ svg.plot text.zone { fill: var(--text-primary); font-size: 12px; font-weight: 60
   .steps, .nav-row, .teacher-fab, .save-hint, .palette, .btn { display: none !important; }
   .card { break-inside: avoid; box-shadow: none; }
   body { background: #fff; }
+}
+
+/* ------------------------------------------------------ 계산식 펼쳐 보기 */
+
+.zone-math {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 12px 4px;
+  margin-bottom: 12px;
+  background: var(--surface-1);
+}
+
+.zone-math-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 10px;
+  margin-bottom: 8px;
+}
+
+.zone-math-head h4 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+table.calc td,
+table.calc th {
+  padding: 4px 8px;
+}
+
+table.calc tbody tr.subtotal th,
+table.calc tbody tr.total th {
+  background: var(--surface-2);
+}
+
+table.calc tbody tr.total th {
+  border-top: 2px solid var(--border-strong);
+}
+
+/* 기존 시가지는 학생이 놓은 것과 구별되게 흐리고 테두리 없이 둔다. */
+.cell[data-fixed="yes"] {
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.cell[data-fixed="yes"]::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    135deg,
+    transparent 0 5px,
+    color-mix(in srgb, var(--text-muted) 16%, transparent) 5px 7px
+  );
+  pointer-events: none;
+}
+
+.plan-slots {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.plan-slot {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 9px 11px;
+  font-size: 0.86rem;
+}
+
+.plan-slot.empty {
+  border-style: dashed;
+  color: var(--text-muted);
+}
+
+.plan-slot .row {
+  display: flex;
+  gap: 8px;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 6px;
+}
+
+.plan-slot button {
+  border: none;
+  background: none;
+  color: var(--accent);
+  padding: 0;
+  font-size: 0.82rem;
+  text-decoration: underline;
+}
+
+.plan-slot button.remove {
+  color: var(--danger);
+}
+
+.plan-boards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
 }
