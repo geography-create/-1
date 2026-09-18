@@ -30,3 +30,11 @@ export const ZONE_COLORS: Record<string, string> = {
   dolmaru: "var(--zone-dolmaru)",
   beodeul: "var(--zone-beodeul)",
 };
+
+/** 종이 답안지에서 생활권을 가려내는 한 글자 표식. 색을 못 쓰는 흑백 출력용이다. */
+export const ZONE_MARK: Record<string, string> = {
+  garam: "가",
+  saedeul: "새",
+  dolmaru: "돌",
+  beodeul: "버",
+};

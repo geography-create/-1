@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import CompareScreen from "./screens/CompareScreen.tsx";
 import DesignScreen from "./screens/DesignScreen.tsx";
 import IntroScreen from "./screens/IntroScreen.tsx";
+import PrintSheet from "./screens/PrintSheet.tsx";
 import ResultScreen from "./screens/ResultScreen.tsx";
 import TeacherGuide from "./screens/TeacherGuide.tsx";
 import WriteScreen from "./screens/WriteScreen.tsx";
@@ -18,16 +19,18 @@ import {
 
 const STEPS = ["과제 안내", "배치", "결과", "안 비교", "서술 연습"];
 
-function isTeacherView(): boolean {
+function hasParam(name: string): boolean {
   if (typeof window === "undefined") return false;
-  return new URLSearchParams(window.location.search).get("teacher") === "1";
+  return new URLSearchParams(window.location.search).get(name) === "1";
 }
 
 export default function App() {
   const [draft, setDraft] = useState<Draft>(() => loadDraft());
   const [savedAt, setSavedAt] = useState<string>(draft.savedAt);
   const [showGuide, setShowGuide] = useState(false);
-  const teacher = useMemo(isTeacherView, []);
+  const teacher = useMemo(() => hasParam("teacher"), []);
+  // ?sheet=1 은 인쇄용 종이 답안지. 연습 화면과 완전히 분리된 출력물이다.
+  const [showSheet, setShowSheet] = useState(() => hasParam("sheet"));
 
   const result = useMemo(() => evaluate(draft.placement), [draft.placement]);
 
@@ -43,7 +46,7 @@ export default function App() {
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
-  }, [draft.step, showGuide]);
+  }, [draft.step, showGuide, showSheet]);
 
   const patch = (next: Partial<Draft>) => setDraft((d) => ({ ...d, ...next }));
   const goto = (step: number) => patch({ step });
@@ -83,6 +86,14 @@ export default function App() {
   }
 
   const reachable = (step: number) => step <= 1 || result.placedCount > 0;
+
+  if (showSheet) {
+    return (
+      <div className="app">
+        <PrintSheet onClose={() => setShowSheet(false)} />
+      </div>
+    );
+  }
 
   return (
     <div className="app">
@@ -124,7 +135,13 @@ export default function App() {
       </header>
 
       {showGuide ? (
-        <TeacherGuide onClose={() => setShowGuide(false)} />
+        <TeacherGuide
+          onClose={() => setShowGuide(false)}
+          onOpenSheet={() => {
+            setShowGuide(false);
+            setShowSheet(true);
+          }}
+        />
       ) : draft.step === 0 ? (
         <IntroScreen onStart={() => goto(1)} />
       ) : draft.step === 1 ? (

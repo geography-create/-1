@@ -13,7 +13,13 @@ import { evaluate } from "../lib/engine.ts";
 
 const BARE = evaluate({});
 
-export default function TeacherGuide({ onClose }: { onClose: () => void }) {
+export default function TeacherGuide({
+  onClose,
+  onOpenSheet,
+}: {
+  onClose: () => void;
+  onOpenSheet: () => void;
+}) {
   return (
     <section className="card">
       <div style={{ display: "flex", justifyContent: "space-between", gap: 12 }}>
@@ -21,6 +27,16 @@ export default function TeacherGuide({ onClose }: { onClose: () => void }) {
         <button type="button" className="btn" onClick={onClose}>
           닫기
         </button>
+      </div>
+
+      <div className="notice" style={{ marginTop: 16 }}>
+        <b>종이 답안지</b> — 실제 평가에 쓸 A4 출력물을 앱과 같은 데이터로 만들어 두었습니다.
+        판을 시계 방향 90° 돌렸고, 색을 전혀 쓰지 않아 흑백 복사기를 거쳐도 생활권이 구분됩니다.
+        <div style={{ marginTop: 8 }}>
+          <button type="button" className="btn primary" onClick={onOpenSheet}>
+            종이 답안지 보기 · 인쇄
+          </button>
+        </div>
       </div>
 
       <h3 style={{ marginTop: 18 }}>이 앱의 위치</h3>
