@@ -23,3 +23,6 @@ dist-standalone
 *.njsproj
 *.sln
 *.sw?
+
+# dorms-check 점검 결과 (scan.json 에 점검 원자료가 들어간다)
+.dorms-check
